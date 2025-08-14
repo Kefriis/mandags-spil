@@ -22,4 +22,8 @@
     <Folder Include="Services\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Tools\WMBlazorSlickCarousel\WMBlazorSlickCarousel.csproj" />
+  </ItemGroup>
+
 </Project>

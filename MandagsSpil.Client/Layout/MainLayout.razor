@@ -2,21 +2,19 @@
 @inherits LayoutComponentBase
 <main>
     <MudLayout>
-       <Appbar @bind-DrawerOpen="_drawerOpen" />
+        <Appbar @bind-DrawerOpen="_drawerOpen" />
         <MudDrawer @bind-Open="_drawerOpen" Elevation="2" OverlayAutoClose="true" Variant="@DrawerVariant.Temporary">
             <MudDrawerHeader>
                 <MudText Typo="Typo.h5" Class="mt-1">Mandags Spil</MudText>
             </MudDrawerHeader>
             <MudNavMenu Rounded="true" Margin="Margin.Normal" Color="Color.Tertiary" Class="pa-2">
-                   <MudNavLink Href="/" 
-                            Match="NavLinkMatch.All" 
-                            Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-                   <MudNavLink Href="/weapon-select" 
-                            Match="NavLinkMatch.Prefix  " 
-                            Icon="@Icons.Material.Filled.Home">Weapon Select</MudNavLink>
-                    <MudNavLink Href="/Dirt3"
-                            Match="NavLinkMatch.Prefix  "
-                            Icon="@Icons.Material.Filled.Home">Dirt 3</MudNavLink>
+                <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+                <MudNavLink Href="/weapon-select" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">
+                    Weapon Select</MudNavLink>
+                <MudNavLink Href="/lottery-wheel" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Circle">
+                    Weapon Wheel</MudNavLink>
+                <MudNavLink Href="/Dirt3" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">Dirt 3
+                </MudNavLink>
             </MudNavMenu>
         </MudDrawer>
         <MudMainContent>

@@ -1,0 +1,146 @@
+﻿@using Microsoft.JSInterop
+@inherits ComponentBase
+
+<div class="flex flex-col items-center gap-3">
+  <canvas @ref="CanvasRef" width="520" height="520" style="display:block;max-width:100%;"></canvas>
+
+  <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" Disabled="@_spinning" OnClick="SpinAsync">
+    @(_spinning ? "Spinning..." : "Spin the Wheel")
+  </MudButton>
+
+  @if (WinnerSlice is not null)
+  {
+    <MudText Typo="Typo.h6">You got: <b>@WinnerSlice.Name</b></MudText>
+  }
+</div>
+
+@code {
+    [Inject] IJSRuntime JS { get; set; } = default!;
+
+    // Input: weapons with weights (icons optional)
+    public class WeaponEntry
+    {
+        public string Name { get; set; } = "";
+        public int Weight { get; set; } = 1;
+        public string? ImageUrl { get; set; } // optional
+    }
+
+    // Special slice config
+    [Parameter] public int TotalSlices { get; set; } = 30;
+    [Parameter] public int MinPistolSlices { get; set; } = 2;
+    [Parameter] public int MinFreeSlices { get; set; } = 2;
+
+    [Parameter] public string? PistolIconUrl { get; set; }  // optional
+    [Parameter] public string? FreeIconUrl { get; set; }    // optional
+
+    // Optional sounds (put files in wwwroot/sounds/)
+    [Parameter] public string? ClickSoundUrl { get; set; } = null; // e.g. "sounds/click.mp3"
+    [Parameter] public string? DingSoundUrl  { get; set; } = null; // e.g. "sounds/ding.mp3"
+
+    // Source data
+    [Parameter] public List<WeaponEntry> Weapons { get; set; } = new();
+
+    // Callback when spin ends
+    public class WheelSliceResult { public string Name { get; set; } = ""; public bool IsSpecial { get; set; } public string? SpecialType { get; set; } public string? ImageUrl { get; set; } }
+    [Parameter] public EventCallback<WheelSliceResult> OnSpinEnd { get; set; }
+
+    // Expose the winner
+    public WheelSliceResult? WinnerSlice { get; private set; }
+
+    // Internal
+    private ElementReference CanvasRef;
+    private IJSObjectReference? _module;
+    private bool _initialized = false;
+    private bool _spinning = false;
+    private List<SliceDto> _finalSlices = new();
+
+    private class SliceDto { public string name { get; set; } = ""; public string? imageUrl { get; set; } public bool isSpecial { get; set; } public string? specialType { get; set; } public string? color { get; set; } }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/weaponWheel.js");
+            BuildSlices();
+            await _module.InvokeVoidAsync("init", CanvasRef, _finalSlices, new {
+                clickSoundUrl = ClickSoundUrl,
+                dingSoundUrl = DingSoundUrl
+            });
+            _initialized = true;
+        }
+    }
+
+    private void BuildSlices()
+    {
+        // 1) Expand by weight
+        var pool = new List<SliceDto>();
+        foreach (var w in Weapons)
+        {
+            for (int i = 0; i < Math.Max(1, w.Weight); i++)
+            {
+                pool.Add(new SliceDto {
+                    name = w.Name,
+                    imageUrl = w.ImageUrl,
+                    isSpecial = false,
+                    specialType = null
+                });
+            }
+        }
+
+        // 2) Ensure special slices present
+        int pistolAdded = 0, freeAdded = 0;
+        while (pool.Count < TotalSlices && pistolAdded < MinPistolSlices)
+        {
+            pool.Add(new SliceDto { name = "Pistol", imageUrl = PistolIconUrl, isSpecial = true, specialType = "Pistol" });
+            pistolAdded++;
+        }
+        while (pool.Count < TotalSlices && freeAdded < MinFreeSlices)
+        {
+            pool.Add(new SliceDto { name = "Free Weapon", imageUrl = FreeIconUrl, isSpecial = true, specialType = "Free" });
+            freeAdded++;
+        }
+
+        // 3) Fill up to exactly TotalSlices (repeat worst/most-weighted items, or just random existing)
+        var rng = new Random();
+        while (pool.Count < TotalSlices && pool.Count > 0)
+        {
+            pool.Add(pool[rng.Next(pool.Count)]);
+        }
+
+        // 4) Trim if too many
+        if (pool.Count > TotalSlices) pool = pool.Take(TotalSlices).ToList();
+
+        // 5) Shuffle for fairness
+        _finalSlices = pool.OrderBy(_ => rng.Next()).ToList();
+
+        // 6) Color assignment (distinct but stable)
+        for (int i = 0; i < _finalSlices.Count; i++)
+        {
+            // Special colors pop more
+            if (_finalSlices[i].isSpecial) {
+                _finalSlices[i].color = _finalSlices[i].specialType == "Pistol" ? "#f39c12" : "#27ae60";
+            } else {
+                _finalSlices[i].color = $"hsl({(i * 360 / _finalSlices.Count)},70%,50%)";
+            }
+        }
+    }
+
+    public async Task SpinAsync()
+    {
+        if (_spinning || !_initialized || _module is null) return;
+        _spinning = true;
+        WinnerSlice = null;
+
+        // Random spin (uniform over slices; weighting is already baked in via duplicates)
+        int index = await _module.InvokeAsync<int>("spinRandom", new { spins = 6, duration = 3000 });
+
+        if (index >= 0 && index < _finalSlices.Count)
+        {
+            var s = _finalSlices[index];
+            WinnerSlice = new WheelSliceResult { Name = s.name, ImageUrl = s.imageUrl, IsSpecial = s.isSpecial, SpecialType = s.specialType };
+            if (OnSpinEnd.HasDelegate) await OnSpinEnd.InvokeAsync(WinnerSlice);
+            StateHasChanged();
+        }
+        _spinning = false;
+    }
+}
