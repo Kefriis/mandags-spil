@@ -1,134 +1,96 @@
 ﻿@page "/lottery-wheel"
-@using System.Linq
-@using MudBlazor
-@inject IJSRuntime JSRuntime
 
-<div class="d-flex flex-column align-center pa-4">
-    <MudText Typo="Typo.h3" Class="mb-4">Call of Duty 2 Weapon Wheel</MudText>
-
-    <div class="ma-4" style="max-width:800px; width:100%;">
-        <BlazorSlickCarousel @ref="_carousel" Configurations="_configurations">
-            <BlazorSlickCarouselContent>
-                @foreach (var item in _wheelItems)
-                {
-                    <div class="slick-item">
-                        <MudCard Outlined="true"
-                            Style="height:150px; display:flex; align-items:center; justify-content:center;">
-                            <MudCardContent>
-                                <MudText Typo="Typo.h6" Class="text-center">@item</MudText>
-                            </MudCardContent>
-                        </MudCard>
-                    </div>
-                }
-            </BlazorSlickCarouselContent>
-        </BlazorSlickCarousel>
-    </div>
-
-    <div class="spin-button-container">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SpinTheWheel" Disabled="@_isSpinning">
-            Spin
-        </MudButton>
+@* <MandagsSpil.Client.Pages.Components.LotteryWheel Weapons="weapons" /> *@
+<div class="container">
+      <div class="name-list" style="@($"transform: translateY({Offset}px); transition: transform {Duration}s {Easing};")">
+        @foreach (var name in namesToScroll)
+        {
+            <div class="name">@name</div>
+        }
     </div>
 </div>
 
+<button @onclick="Spin">Spin</button>
+
 @code {
-    private class Weapon
-    {
-        public string Name { get; set; }
-        public int Weight { get; set; }
-    }
+    List<string> Names = new()
+        {
+        "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank",
+        "Alice", "Bob", "Charlie" // repeat for scroll effect
+        };
 
-    private List<Weapon> _weaponDefinitions = new List<Weapon>
-{
-new Weapon { Name = "Gewehr 43", Weight = 5 },
-new Weapon { Name = "Sten", Weight = 4 },
-new Weapon { Name = "PPSH-41", Weight = 3 },
-new Weapon { Name = "M1 Garand", Weight = 2 },
-new Weapon { Name = "MP40", Weight = 1 },
-new Weapon { Name = "Springfield", Weight = 1 },
-new Weapon { Name = "Mosin-Nagant", Weight = 1 },
-new Weapon { Name = "Thompson", Weight = 1 },
-new Weapon { Name = "Bren LMG", Weight = 1 },
-new Weapon { Name = "FG42", Weight = 1 },
-new Weapon { Name = "Kar98k", Weight = 1 },
-new Weapon { Name = "SVT-40", Weight = 1 },
-new Weapon { Name = "M1 Carbine", Weight = 1 },
-new Weapon { Name = "Pistol", Weight = 1 },
-new Weapon { Name = "Free Weapon", Weight = 1 },
-new Weapon { Name = "Browning M1919", Weight = 1 }
-};
+      double Duration = 0;
+  string Easing = "ease-out"; // or use cubic-bezier
 
-    private List<string> _wheelItems = new List<string>();
-    private bool _isSpinning = false;
-    private Random _random = new Random();
-    private int _initialSlide;
-    private BlazorSlickCarousel? _carousel;
-    private int _uniqueItemCount;
+    List<string> namesToScroll = new();
 
-    public WMBSCInitialSettings? _configurations;
+    private string selectedWeapon = string.Empty;
+
+    string Winner = "Charlie";
+    int NameHeight = 60; // px
+    int Offset = 0;
 
     protected override void OnInitialized()
     {
-        _configurations = new WMBSCInitialSettings
-        {
-            slidesToShow = 1,
-            slidesToScroll = 1,
-
-            infinite = true,
-            speed = 80,
-            swipe = false,
-            fade = false,
-            arrows = false,
-            dots = false,
-            pauseOnHover = false,
-            pauseOnFocus = false,
-             cssEase = "cubic-bezier(0.25, 0.1, 0.25, 1)"
-
-        };
-
-        foreach (var weapon in _weaponDefinitions)
-        {
-            for (int i = 0; i < weapon.Weight; i++)
-            {
-                _wheelItems.Add(weapon.Name);
-            }
-        }
-        _uniqueItemCount = _weaponDefinitions.Sum(w => w.Weight);
-        _wheelItems = _wheelItems.OrderBy(x => _random.Next()).ToList();
-
-        // The carousel handles the infinite looping, so we don't need to duplicate the list.
+        namesToScroll = Names;
     }
 
-    private async Task SpinTheWheel()
+    async  Task Spin()
     {
-        _isSpinning = true;
+        var random = new Random();
+        int index = random.Next(Names.Count);
+        selectedWeapon = Names[index];
 
-        var winningItemIndex = _random.Next(0, _uniqueItemCount);
+        Console.WriteLine($"Selected Weapon: {selectedWeapon}");    
 
-        // Spin for 1 second using Next()
-        var spinDuration = 1500; // milliseconds
-        var spinInterval = 100; // milliseconds between Next() calls
-        var elapsed = 0;
+        namesToScroll = Enumerable.Range(0, 20).SelectMany(_ => Names).ToList();
 
-        while (elapsed < spinDuration)
-        {
-            await _carousel!.Next();
-            await Task.Delay(spinInterval);
-            elapsed += spinInterval;
-        } 
+        var winnerIndex = namesToScroll.FindLastIndex(n => n == selectedWeapon);
+        namesToScroll.Add(selectedWeapon); // Ensure winner is at the end for visibility
+        Offset = -((namesToScroll.Count - 1 ) * NameHeight);
+        Duration = 2.5; // seconds
 
-        _configurations!.speed = 1500; // Set a high speed for the final spin
-       
-        StateHasChanged();
+        await Task.Delay(2500);
 
-        // Jump to the winning item
-        await _carousel!.GoTo(winningItemIndex);
-
-        // Wait for the animation to finish (optional)
-        @* await Task.Delay(1500); *@
-
-        Console.WriteLine($"The winner is: {_wheelItems[winningItemIndex]}");
-
-        _isSpinning = false;
+        namesToScroll = new List<string>(){selectedWeapon};
+        Offset = 0;
+        Duration = 0; // Reset duration for immediate effect
     }
 }
+
+<style>
+    .container {
+        overflow: hidden;
+        height: 60px;
+        width: 300px;
+        border: 2px solid #fff;
+        position: relative;
+    }
+
+    .name-list {
+        display: flex;
+        flex-direction: column;
+        transition: transform 2s ease-in-out;
+    }
+
+    .name {
+        height: 60px;
+        line-height: 60px;
+        text-align: center;
+        font-size: 1.5rem;
+        border-bottom: 1px solid #444;
+    }
+
+    .winner {
+        background: gold;
+        color: #000;
+        font-weight: bold;
+    }
+
+    button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+</style>
