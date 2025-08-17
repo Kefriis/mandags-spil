@@ -21,6 +21,8 @@
 @* Needed for snackbars *@
 <MudSnackbarProvider />
 
+<PWAUpdater />
+
 @code {
     private bool _isDarkMode;
     private MudThemeProvider? _mudThemeProvider;
@@ -30,6 +32,7 @@
         if (firstRender)
         {
             _isDarkMode = await _mudThemeProvider!.GetSystemDarkModeAsync();
+            
             StateHasChanged();
         }
     }
