@@ -33,7 +33,7 @@
     .name-list {
         display: flex;
         flex-direction: column;
-        transition: transform 2.6s cubic-bezier(0, .57, .58, 1.05);
+        transition: transform 1.6s cubic-bezier(0, .57, .58, 1.05);
     }
 
     .name {
