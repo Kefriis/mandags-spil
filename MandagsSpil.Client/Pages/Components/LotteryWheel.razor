@@ -1,102 +1,158 @@
-﻿@inject IJSRuntime JS
+﻿<MudStack Spacing="2">
+    <div class="container">
+        <div class="name-list"
+            style="@($"transform: translateY({Offset}px); transition: transform {Duration}s cubic-bezier(0.2,0.8,0.4,1.15);")">
+            @foreach (var lotterItem in lotteryItems)
+            {
+                <div class="name">@lotterItem.Name</div>
+            }
+        </div>
+    </div>
 
-<div>
-    <MudStack>
-        @foreach (var weapon in Weapons)
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Spin" Disabled="_spinning" FullWidth="true">
+        @if (_spinning)
         {
-           
-            <AosWrapper AnimationName="slide-down" Duration="1000">
-
-                <div style="height: 3vh; width: 100%;">
-                    @weapon
-                </div>
-
-            </AosWrapper>
+            <MudText>Spinning</MudText>
         }
+        else
+        {
+            <MudText>Spin</MudText>
+        }
+    </MudButton>
 </MudStack>
-    <button @onclick="Spin" disabled="@IsSpinning">
-        @(IsSpinning ? "Spinning…" : "Spin")
-    </button>
-</div>
 
 @code {
-    [Parameter] public List<string> Weapons { get; set; } = new();
-    [Parameter] public int SelectedIndex { get; set; } = -1;
+    private class LotteryWheelEntry
+    {
+        public string? Name { get; set; }
+        public bool Winner { get; set; }
+    }
 
-    string WheelStyle = "";
-    bool IsSpinning = false;
-    Random rnd = new();
+    [Parameter]
+    public List<string> Weapons { get; set; } = new List<string>();
+
+    [Parameter]
+    public string? Winner { get; set; }
+
+    [Parameter]
+    public EventCallback<string> WinnerChanged { get; set; }
+
+    double Duration = 0;
+
+    List<LotteryWheelEntry> lotteryItems = new();
+
+    private LotteryWheelEntry selectedWeapon = new();
+    private bool _spinning = false;
+    int NameHeight = 60; // px
+    int Offset = 0;
+
+    private List<LotteryWheelEntry> mappedEntries = new List<LotteryWheelEntry>();
+
+    protected override void OnInitialized()
+    {
+        mappedEntries = Weapons.Select(name => new LotteryWheelEntry { Name = name, Winner = false }).ToList();
+
+        lotteryItems = mappedEntries;;
+    }
 
     async Task Spin()
     {
-        if (IsSpinning || Weapons.Count == 0) return;
-        IsSpinning = true;
+        _spinning = true;
+        var random = new Random();
+        int index = random.Next(Weapons.Count);
+        selectedWeapon = new LotteryWheelEntry()
+        {
+                Name = Weapons[index]
+        };
+        Winner = selectedWeapon.Name;
 
-        // Pick a random weapon
-        SelectedIndex = rnd.Next(Weapons.Count);
+        var notWinnerNames = lotteryItems.Where(n => n.Name != selectedWeapon.Name).ToList();
+        var startEntries = notWinnerNames.Take(2).ToList();
+        var endEntries = notWinnerNames.Skip(Math.Max(0, notWinnerNames.Count - 3)).ToList();
 
-        // Calculate rotation to land selected weapon at top (0 deg)
-        int anglePerItem = 360 / Weapons.Count;
-        int targetAngle = SelectedIndex * anglePerItem;
+        lotteryItems = Enumerable.Range(0, 20).SelectMany(_ => mappedEntries).ToList();
 
-        // Add extra spins for effect
-        int totalRotation = 360 * 5 + (360 - targetAngle);
-
-        WheelStyle = $"transition: transform 2s cubic-bezier(.2,.8,.2,1); " +
-        $"transform: rotate({totalRotation}deg);";
-        StateHasChanged();
-
-        await Task.Delay(2000);
-
-        // Reset rotation to just the final angle (no transition)
-        WheelStyle = $"transition: none; transform: rotate({360 - targetAngle}deg);";
-        IsSpinning = false;
-
-        await JS.InvokeVoidAsync("AOS.refresh");
+        lotteryItems.AddRange(startEntries);
+        lotteryItems.Add(selectedWeapon);
+        lotteryItems.AddRange(endEntries);
+        var offset = ((lotteryItems.Count - 6) * NameHeight);
+        Offset = -offset;
+        Duration = 2.6;
+        Offset = -offset;
 
         StateHasChanged();
+        await Task.Delay(3000);
+
+        _spinning = false;
+
+        lotteryItems = new List<LotteryWheelEntry>();
+        lotteryItems.AddRange(startEntries);
+        lotteryItems.Add(selectedWeapon);
+        lotteryItems.AddRange(endEntries);
+        Offset = 0;
+        Duration = 0;
+        StateHasChanged();
+        await WinnerChanged.InvokeAsync(Winner);
     }
 }
 
 <style>
-    .wheel-container {
+    .container {
+        overflow: hidden;
+        height: 300px;
+        /* Show 5 entries */
+        width: 300px;
+        border: 2px solid #fff;
         position: relative;
-        width: 20rem;
-        height: 22rem;
-        margin: auto;
-        text-align: center;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     }
 
-    .weapon-wheel {
-        position: relative;
-        width: 20rem;
-        height: 20rem;
-        border-radius: 50%;
-        margin: auto;
-        transform: rotate(0deg);
-        transition: transform 2s ease-out;
-    }
-
-    .weapon-slot {
+    /* Shadow overlays */
+    .container::before,
+    .container::after {
+        content: "";
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform-origin: center;
+        left: 0;
+        width: 100%;
+        height: 180px;
+        pointer-events: none;
+        z-index: 2;
     }
 
-    .weapon-content {
-        background: #222;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        font-weight: bold;
+    .container::before {
+        top: 0;
+        background: linear-gradient(to bottom, #000000 0%, rgba(0, 255, 0, 0) 80%);
+    }
+
+    .container::after {
+        bottom: 0;
+        background: linear-gradient(to top, #000000 0%, rgba(0, 255, 0, 0) 80%);
+    }
+
+    .name-list {
+        display: flex;
+        flex-direction: column;
+        transition: transform 2.6s cubic-bezier(0, .57, .58, 1.05);
+    }
+
+    .name {
+        height: 60px;
+        line-height: 60px;
         text-align: center;
+        font-size: 1.5rem;
+        border-bottom: 1px solid #444;
     }
 
-    .weapon-content.selected {
+    .winner {
         background: gold;
-        color: black;
-        transform: scale(1.2);
-        box-shadow: 0 0 10px gold;
+        color: #000;
+        font-weight: bold;
+    }
+
+    button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        cursor: pointer;
     }
 </style>

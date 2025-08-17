@@ -1,96 +1,42 @@
-﻿@page "/lottery-wheel"
+﻿@page "/cod2-weapon-lotterwheel/{nation}"
+@using MandagsSpil.Client.Extensions
+@using MandagsSpil.Client.Services
 
-@* <MandagsSpil.Client.Pages.Components.LotteryWheel Weapons="weapons" /> *@
-<div class="container">
-      <div class="name-list" style="@($"transform: translateY({Offset}px); transition: transform {Duration}s {Easing};")">
-        @foreach (var name in namesToScroll)
-        {
-            <div class="name">@name</div>
-        }
-    </div>
+<HeaderTitle Title="Weapon Lottery" />
+<ShowBackButton />
+
+<div class="d-flex justify-center" style="padding-top: 10vh;">
+    <MandagsSpil.Client.Pages.Components.LotteryWheel Weapons="Weapons" WinnerChanged="OnWinnerChanged" />
 </div>
 
-<button @onclick="Spin">Spin</button>
-
 @code {
-    List<string> Names = new()
-        {
-        "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank",
-        "Alice", "Bob", "Charlie" // repeat for scroll effect
-        };
+    [Parameter]
+    public string? nation { get; set; }
 
-      double Duration = 0;
-  string Easing = "ease-out"; // or use cubic-bezier
-
-    List<string> namesToScroll = new();
-
-    private string selectedWeapon = string.Empty;
-
-    string Winner = "Charlie";
-    int NameHeight = 60; // px
-    int Offset = 0;
+    private List<string> Weapons = new List<string>();
 
     protected override void OnInitialized()
     {
-        namesToScroll = Names;
+        // Initialize the weapons based on the selected nation
+        var nationWeapons = WeaponService.GetWeaponsByNation(nation?.ToLowerInvariant() ?? string.Empty);
+       
+        Weapons = nationWeapons.Select(w => w.Name).ToList();
+
+        Weapons = nationWeapons
+        .SelectMany(w => Enumerable.Repeat(w.Name, w.Weight))
+        .ToList();
+
+        // Add a Pistol and Free Weapon to the list
+        Weapons.Add("Pistol");
+        Weapons.Add("Free Weapon");
+
+        Weapons.Shuffle();
     }
 
-    async  Task Spin()
+    private string? Winner { get; set; }
+
+    private void OnWinnerChanged(string winner)
     {
-        var random = new Random();
-        int index = random.Next(Names.Count);
-        selectedWeapon = Names[index];
-
-        Console.WriteLine($"Selected Weapon: {selectedWeapon}");    
-
-        namesToScroll = Enumerable.Range(0, 20).SelectMany(_ => Names).ToList();
-
-        var winnerIndex = namesToScroll.FindLastIndex(n => n == selectedWeapon);
-        namesToScroll.Add(selectedWeapon); // Ensure winner is at the end for visibility
-        Offset = -((namesToScroll.Count - 1 ) * NameHeight);
-        Duration = 2.5; // seconds
-
-        await Task.Delay(2500);
-
-        namesToScroll = new List<string>(){selectedWeapon};
-        Offset = 0;
-        Duration = 0; // Reset duration for immediate effect
+        Console.WriteLine($"Winner selected: {winner}");
     }
 }
-
-<style>
-    .container {
-        overflow: hidden;
-        height: 60px;
-        width: 300px;
-        border: 2px solid #fff;
-        position: relative;
-    }
-
-    .name-list {
-        display: flex;
-        flex-direction: column;
-        transition: transform 2s ease-in-out;
-    }
-
-    .name {
-        height: 60px;
-        line-height: 60px;
-        text-align: center;
-        font-size: 1.5rem;
-        border-bottom: 1px solid #444;
-    }
-
-    .winner {
-        background: gold;
-        color: #000;
-        font-weight: bold;
-    }
-
-    button {
-        margin-top: 20px;
-        padding: 10px 20px;
-        font-size: 1rem;
-        cursor: pointer;
-    }
-</style>

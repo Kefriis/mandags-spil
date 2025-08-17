@@ -11,7 +11,6 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped<AppbarState>();
 
 builder.Services.AddMudServices();
-builder.Services.AddWMBSC();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
