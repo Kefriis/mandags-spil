@@ -1,0 +1,75 @@
+.wheel-container {
+    overflow: hidden;
+    height: 300px;
+    width: 300px;
+    border: 8px solid #8a969c;
+    border-radius: 40px; /* Makes the border round */
+    position: relative;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+    /* Shadow overlays */
+    .wheel-container::before,
+    .wheel-container::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 180px;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .wheel-container::before {
+        top: 0;
+        background: linear-gradient(to bottom, #000000 0%, rgba(0, 255, 0, 0) 80%);
+    }
+
+    .wheel-container::after {
+        bottom: 0;
+        background: linear-gradient(to top, #000000 0%, rgba(0, 255, 0, 0) 80%);
+    }
+
+    .name-list {
+        display: flex;
+        flex-direction: column;
+        transition: transform 2.6s cubic-bezier(0, .57, .58, 1.05);
+    }
+
+    .name {
+        height: 60px;
+        line-height: 60px;
+        text-align: center;
+        font-size: 1.5rem;
+        border-bottom: 1px solid #444;
+    }
+
+    .winner {
+        background: gold;
+        color: #000;
+        font-weight: bold;
+    }
+
+    .winner {
+    background: radial-gradient(ellipse at center, #ffe066 0%, #ffb300 80%, #fffbe6 100%);
+    color: #4b3200;
+    font-weight: bold;
+    box-shadow: 0 0 32px 8px #ffe066, 0 0 8px 2px #ffb300 inset;
+    animation: lamp-flicker 1.2s infinite alternate;
+    border-bottom: 2px solid #ffb300;
+    text-shadow: 0 0 8px #fffbe6, 0 0 2px #ffb300;  
+    }
+
+@keyframes lamp-flicker {
+    0% { filter: brightness(1) blur(0.5px); }
+    10% { filter: brightness(1.1) blur(1px); }
+    20% { filter: brightness(0.95) blur(0.5px); }
+    30% { filter: brightness(1.2) blur(1.5px); }
+    40% { filter: brightness(1) blur(0.5px); }
+    50% { filter: brightness(1.15) blur(1px); }
+    60% { filter: brightness(0.9) blur(0.5px); }
+    70% { filter: brightness(1.1) blur(1px); }
+    80% { filter: brightness(1.05) blur(0.5px); }
+    90% { filter: brightness(1.2) blur(1.5px); }
+    100% { filter: brightness(1) blur(0.5px); }
+}

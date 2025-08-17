@@ -1,10 +1,10 @@
 ﻿<MudStack Spacing="2">
-    <div class="container">
+    <div class="wheel-container">
         <div class="name-list"
             style="@($"transform: translateY({Offset}px); transition: transform {Duration}s cubic-bezier(0.2,0.8,0.4,1.15);")">
             @foreach (var lotterItem in lotteryItems)
             {
-                <div class="name">@lotterItem.Name</div>
+                <div class="name @(lotterItem.Winner ? "winner" : string.Empty)">@lotterItem.Name</div>
             }
         </div>
     </div>
@@ -52,7 +52,7 @@
     {
         mappedEntries = Weapons.Select(name => new LotteryWheelEntry { Name = name, Winner = false }).ToList();
 
-        lotteryItems = mappedEntries;;
+        lotteryItems = mappedEntries; ;
     }
 
     async Task Spin()
@@ -62,97 +62,49 @@
         int index = random.Next(Weapons.Count);
         selectedWeapon = new LotteryWheelEntry()
         {
-                Name = Weapons[index]
+            Name = Weapons[index],
         };
         Winner = selectedWeapon.Name;
 
-        var notWinnerNames = lotteryItems.Where(n => n.Name != selectedWeapon.Name).ToList();
-        var startEntries = notWinnerNames.Take(2).ToList();
-        var endEntries = notWinnerNames.Skip(Math.Max(0, notWinnerNames.Count - 3)).ToList();
+        lotteryItems = new List<LotteryWheelEntry>(mappedEntries);
 
         lotteryItems = Enumerable.Range(0, 20).SelectMany(_ => mappedEntries).ToList();
 
-        lotteryItems.AddRange(startEntries);
-        lotteryItems.Add(selectedWeapon);
-        lotteryItems.AddRange(endEntries);
+        FillLotteryEnd(selectedWeapon);
+
         var offset = ((lotteryItems.Count - 6) * NameHeight);
         Offset = -offset;
         Duration = 2.6;
         Offset = -offset;
 
         StateHasChanged();
-        await Task.Delay(3000);
+        await Task.Delay(2700);
 
         _spinning = false;
 
-        lotteryItems = new List<LotteryWheelEntry>();
-        lotteryItems.AddRange(startEntries);
-        lotteryItems.Add(selectedWeapon);
-        lotteryItems.AddRange(endEntries);
+        selectedWeapon.Winner = true;
+        FillLotteryEnd(selectedWeapon, true);
+
         Offset = 0;
         Duration = 0;
         StateHasChanged();
+
         await WinnerChanged.InvokeAsync(Winner);
     }
+
+    private void FillLotteryEnd(LotteryWheelEntry selectedWeapon, bool resetList = false)
+    {
+        var notWinnerNames = lotteryItems.Where(n => n.Name != selectedWeapon.Name).ToList();
+        var startEntries = notWinnerNames.Take(2).ToList();
+        var endEntries = notWinnerNames.Skip(Math.Max(0, notWinnerNames.Count - 3)).ToList();
+
+        if (resetList)
+        {
+            lotteryItems.Clear();
+        }
+
+        lotteryItems.AddRange(startEntries);
+        lotteryItems.Add(selectedWeapon);
+        lotteryItems.AddRange(endEntries);
+    }
 }
-
-<style>
-    .container {
-        overflow: hidden;
-        height: 300px;
-        /* Show 5 entries */
-        width: 300px;
-        border: 2px solid #fff;
-        position: relative;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Shadow overlays */
-    .container::before,
-    .container::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        width: 100%;
-        height: 180px;
-        pointer-events: none;
-        z-index: 2;
-    }
-
-    .container::before {
-        top: 0;
-        background: linear-gradient(to bottom, #000000 0%, rgba(0, 255, 0, 0) 80%);
-    }
-
-    .container::after {
-        bottom: 0;
-        background: linear-gradient(to top, #000000 0%, rgba(0, 255, 0, 0) 80%);
-    }
-
-    .name-list {
-        display: flex;
-        flex-direction: column;
-        transition: transform 2.6s cubic-bezier(0, .57, .58, 1.05);
-    }
-
-    .name {
-        height: 60px;
-        line-height: 60px;
-        text-align: center;
-        font-size: 1.5rem;
-        border-bottom: 1px solid #444;
-    }
-
-    .winner {
-        background: gold;
-        color: #000;
-        font-weight: bold;
-    }
-
-    button {
-        margin-top: 20px;
-        padding: 10px 20px;
-        font-size: 1rem;
-        cursor: pointer;
-    }
-</style>
