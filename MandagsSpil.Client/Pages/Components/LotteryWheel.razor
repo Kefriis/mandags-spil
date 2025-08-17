@@ -68,7 +68,7 @@
 
         lotteryItems = new List<LotteryWheelEntry>(mappedEntries);
 
-        lotteryItems = Enumerable.Range(0, 20).SelectMany(_ => mappedEntries).ToList();
+        lotteryItems = Enumerable.Range(0, 10).SelectMany(_ => mappedEntries).ToList();
 
         FillLotteryEnd(selectedWeapon);
 
