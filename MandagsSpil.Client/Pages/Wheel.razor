@@ -4,10 +4,11 @@
 
 <HeaderTitle Title="@nation" />
 <ShowBackButton />
-
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-4">
 <div class="d-flex justify-center" style="padding-top: 10vh;">
     <MandagsSpil.Client.Pages.Components.LotteryWheel Weapons="Weapons" WinnerChanged="OnWinnerChanged" />
 </div>
+</MudContainer>
 
 @code {
     [Parameter]
