@@ -8,32 +8,19 @@
     <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-6">Select a nation to begin.</MudText>
 
     <MudStack Spacing="4">
-        <MudButton Variant="Variant.Filled"
-                   Size="Size.Large"
-                   FullWidth="true"
-                   Class="usa-button"
-                   OnClick="@(() => NavigateToNation("American"))">
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="usa-button" StartIcon="@CustomIcon.AmericanFlag"
+            OnClick="@(() => NavigateToNation("American"))">
             USA
         </MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Size="Size.Large"
-                   FullWidth="true"
-                   Class="british-button"
-                   OnClick="@(() => NavigateToNation("British"))">
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="british-button" StartIcon="@CustomIcon.BritishFlag"
+            OnClick="@(() => NavigateToNation("British"))">
             British
         </MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Size="Size.Large"
-                   FullWidth="true"
-                   Class="russian-button"
-                   OnClick="@(() => NavigateToNation("Russian"))">
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="russian-button" StartIcon="@CustomIcon.SovietFlag"
+            OnClick="@(() => NavigateToNation("Russian"))">
             Russian
         </MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Size="Size.Large"
-                   FullWidth="true"
-                   Class="german-button"
-                   OnClick="@(() => NavigateToNation("German"))">
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="german-button" StartIcon="@CustomIcon.GermanFlag" OnClick="@(() => NavigateToNation("German"))">
             German
         </MudButton>
     </MudStack>
