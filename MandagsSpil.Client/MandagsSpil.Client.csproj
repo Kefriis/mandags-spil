@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <Folder Include="Layout\Components\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

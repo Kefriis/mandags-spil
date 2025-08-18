@@ -1,0 +1,34 @@
+﻿@page "/nation-select"
+@inject NavigationManager NavManager
+
+<HeaderTitle Title="Nation Select" />
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-10">
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">CoD2 Weapon Randomizer</MudText>
+    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-6">Select a nation to begin.</MudText>
+
+    <MudStack Spacing="4">
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="usa-button" StartIcon="@CustomIcon.AmericanFlag"
+            OnClick="@(() => NavigateToNation("American"))">
+            USA
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="british-button" StartIcon="@CustomIcon.BritishFlag"
+            OnClick="@(() => NavigateToNation("British"))">
+            British
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="russian-button" StartIcon="@CustomIcon.SovietFlag"
+            OnClick="@(() => NavigateToNation("Russian"))">
+            Russian
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="german-button" StartIcon="@CustomIcon.GermanFlag" OnClick="@(() => NavigateToNation("German"))">
+            German
+        </MudButton>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private void NavigateToNation(string nation)
+    {
+        NavManager.NavigateTo($"/cod2-weapon-lotterwheel/{nation}");
+    }
+}

@@ -1,0 +1,43 @@
+﻿@page "/cod2-weapon-lotterwheel/{nation}"
+@using MandagsSpil.Client.Extensions
+@using MandagsSpil.Client.Services
+
+<HeaderTitle Title="@nation" />
+<ShowBackButton />
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-4">
+<div class="d-flex justify-center" style="padding-top: 10vh;">
+    <MandagsSpil.Client.Pages.Components.LotteryWheel Weapons="Weapons" WinnerChanged="OnWinnerChanged" />
+</div>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string? nation { get; set; }
+
+    private List<string> Weapons = new List<string>();
+
+    protected override void OnInitialized()
+    {
+        // Initialize the weapons based on the selected nation
+        var nationWeapons = WeaponService.GetWeaponsByNation(nation?.ToLowerInvariant() ?? string.Empty);
+       
+        Weapons = nationWeapons.Select(w => w.Name).ToList();
+
+        Weapons = nationWeapons
+        .SelectMany(w => Enumerable.Repeat(w.Name, w.Weight))
+        .ToList();
+
+        // Add a Pistol and Free Weapon to the list
+        Weapons.Add("Pistol");
+        Weapons.Add("Free Weapon");
+
+        Weapons.Shuffle();
+    }
+
+    private string? Winner { get; set; }
+
+    private void OnWinnerChanged(string winner)
+    {
+        Console.WriteLine($"Winner selected: {winner}");
+    }
+}

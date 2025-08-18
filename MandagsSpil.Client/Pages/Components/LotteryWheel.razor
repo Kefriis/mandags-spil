@@ -1,0 +1,110 @@
+﻿<MudStack Spacing="2">
+    <div class="wheel-container">
+        <div class="name-list"
+            style="@($"transform: translateY({Offset}px); transition: transform {Duration}s cubic-bezier(0.2,0.8,0.4,1.15);")">
+            @foreach (var lotterItem in lotteryItems)
+            {
+                <div class="name @(lotterItem.Winner ? "winner" : string.Empty)">@lotterItem.Name</div>
+            }
+        </div>
+    </div>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Spin" Size="Size.Large" Disabled="_spinning" FullWidth="true">
+        @if (_spinning)
+        {
+            <MudText>Spinning</MudText>
+        }
+        else
+        {
+            <MudText>Spin</MudText>
+        }
+    </MudButton>
+</MudStack>
+
+@code {
+    private class LotteryWheelEntry
+    {
+        public string? Name { get; set; }
+        public bool Winner { get; set; }
+    }
+
+    [Parameter]
+    public List<string> Weapons { get; set; } = new List<string>();
+
+    [Parameter]
+    public string? Winner { get; set; }
+
+    [Parameter]
+    public EventCallback<string> WinnerChanged { get; set; }
+
+    double Duration = 0;
+
+    List<LotteryWheelEntry> lotteryItems = new();
+
+    private LotteryWheelEntry selectedWeapon = new();
+    private bool _spinning = false;
+    int NameHeight = 60; // px
+    int Offset = 0;
+
+    private List<LotteryWheelEntry> mappedEntries = new List<LotteryWheelEntry>();
+
+    protected override void OnInitialized()
+    {
+        mappedEntries = Weapons.Select(name => new LotteryWheelEntry { Name = name, Winner = false }).ToList();
+
+        lotteryItems = mappedEntries; ;
+    }
+
+    async Task Spin()
+    {
+        _spinning = true;
+        var random = new Random();
+        int index = random.Next(Weapons.Count);
+        selectedWeapon = new LotteryWheelEntry()
+        {
+            Name = Weapons[index],
+        };
+        Winner = selectedWeapon.Name;
+
+        lotteryItems = new List<LotteryWheelEntry>(mappedEntries);
+
+        lotteryItems = Enumerable.Range(0, 10).SelectMany(_ => mappedEntries).ToList();
+
+        FillLotteryEnd(selectedWeapon);
+
+        var offset = ((lotteryItems.Count - 6) * NameHeight);
+        Offset = -offset;
+        Duration = 1.6;
+        Offset = -offset;
+
+        StateHasChanged();
+        await Task.Delay(1700);
+
+        _spinning = false;
+
+        selectedWeapon.Winner = true;
+        FillLotteryEnd(selectedWeapon, true);
+
+        Offset = 0;
+        Duration = 0;
+        StateHasChanged();
+
+        await WinnerChanged.InvokeAsync(Winner);
+    }
+
+    private void FillLotteryEnd(LotteryWheelEntry selectedWeapon, bool resetList = false)
+    {
+        var notWinnerNames = lotteryItems.Where(n => n.Name != selectedWeapon.Name).ToList();
+        var startEntries = notWinnerNames.Take(2).ToList();
+        var endEntries = notWinnerNames.Skip(Math.Max(0, notWinnerNames.Count - 3)).ToList();
+
+        if (resetList)
+        {
+            lotteryItems.Clear();
+        }
+
+        lotteryItems.AddRange(startEntries);
+        lotteryItems.Add(selectedWeapon);
+        lotteryItems.AddRange(endEntries);
+    }
+}
