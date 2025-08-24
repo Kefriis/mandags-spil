@@ -42,7 +42,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var isDeveloperMode = await StorageService.GetDeveloperModeAsync();
+
         Cod2State.OnStateChanged += StateHasChanged;
+        
+        Cod2State.SetDeveloperMode(isDeveloperMode);
 
         await base.OnInitializedAsync();
     }
