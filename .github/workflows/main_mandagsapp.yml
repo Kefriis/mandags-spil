@@ -5,10 +5,10 @@ name: Build and deploy ASP.Net Core app to Azure Web App - mandagsApp
 
 on:
   push:
-    paths:
-      - ./MandagsSpil.API
     branches:
       - main
+    paths:
+      - ./MandagsSpil.API
   workflow_dispatch:
 
 jobs:
@@ -66,4 +66,5 @@ jobs:
           package: .
 
           
+
 
