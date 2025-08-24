@@ -1,4 +1,5 @@
-﻿@page "/nation-select"
+﻿@page "/nation-select/{GameMode}"
+@using MandagsSpil.Shared.Contracts
 @inject NavigationManager NavManager
 
 <HeaderTitle Title="Nation Select" />
@@ -8,27 +9,48 @@
     <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-6">Select a nation to begin.</MudText>
 
     <MudStack Spacing="4">
-        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="usa-button" StartIcon="@CustomIcon.AmericanFlag"
-            OnClick="@(() => NavigateToNation("American"))">
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="usa-button"
+            StartIcon="@CustomIcon.AmericanFlag" OnClick="@(() => NavigateToNation(NationEnum.USA.ToString()))">
             USA
         </MudButton>
-        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="british-button" StartIcon="@CustomIcon.BritishFlag"
-            OnClick="@(() => NavigateToNation("British"))">
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="british-button"
+            StartIcon="@CustomIcon.BritishFlag" OnClick="@(() => NavigateToNation(NationEnum.UK.ToString()))">
             British
         </MudButton>
-        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="russian-button" StartIcon="@CustomIcon.SovietFlag"
-            OnClick="@(() => NavigateToNation("Russian"))">
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="russian-button"
+            StartIcon="@CustomIcon.SovietFlag" OnClick="@(() => NavigateToNation(NationEnum.USSR.ToString()))">
             Russian
         </MudButton>
-        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="german-button" StartIcon="@CustomIcon.GermanFlag" OnClick="@(() => NavigateToNation("German"))">
+        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Class="german-button"
+            StartIcon="@CustomIcon.GermanFlag" OnClick="@(() => NavigateToNation(NationEnum.Germany.ToString()))">
             German
         </MudButton>
     </MudStack>
 </MudContainer>
 
 @code {
+    [Parameter] public string? GameMode { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // You can use GameMode if needed, e.g., to set a default nation based on the game mode.
+        // For now, we just ensure it's not null.
+        if (string.IsNullOrEmpty(GameMode))
+        {
+            GameMode = "Default";
+        }
+    }
+
     private void NavigateToNation(string nation)
     {
-        NavManager.NavigateTo($"/cod2-weapon-lotterwheel/{nation}");
+        if (GameMode == GameModeConstants.Default || string.IsNullOrEmpty(GameMode) || GameMode == GameModeConstants.Lottery)
+        {
+            NavManager.NavigateTo($"/cod2-weapon-lotterwheel/{nation}");
+        }
+        else if (GameMode == GameModeConstants.Lobby)
+        {
+            NavManager.NavigateTo($"/lobby/{nation}");
+        }
+
     }
 }

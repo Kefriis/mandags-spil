@@ -1,4 +1,6 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
+﻿@inject Cod2State Cod2State
+
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
@@ -12,7 +14,7 @@
 </Router>
 
 @* Required *@
-<MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode"/>
+<MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode" />
 <MudPopoverProvider />
 
 @* Needed for dialogs *@
@@ -32,8 +34,13 @@
         if (firstRender)
         {
             _isDarkMode = await _mudThemeProvider!.GetSystemDarkModeAsync();
-            
+
             StateHasChanged();
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cod2State.InitializeAsync();
     }
 }

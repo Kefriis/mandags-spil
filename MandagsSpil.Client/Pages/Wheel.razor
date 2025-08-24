@@ -1,6 +1,4 @@
 ﻿@page "/cod2-weapon-lotterwheel/{nation}"
-@using MandagsSpil.Client.Extensions
-@using MandagsSpil.Client.Services
 
 <HeaderTitle Title="@nation" />
 <ShowBackButton />
@@ -19,7 +17,7 @@
     protected override void OnInitialized()
     {
         // Initialize the weapons based on the selected nation
-        var nationWeapons = WeaponService.GetWeaponsByNation(nation?.ToLowerInvariant() ?? string.Empty);
+        List<Weapon>? nationWeapons = WeaponService.GetWeaponsByNation(nation?.ToNationEnum());
        
         Weapons = nationWeapons.Select(w => w.Name).ToList();
 

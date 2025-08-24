@@ -1,0 +1,29 @@
+﻿@page "/Settings"
+@inject StorageService StorageService
+
+<HeaderTitle Title="Settings" />
+<PageTitle>Settings</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+    <MudTextField @bind-Value="Username" Label="Username" Variant="Variant.Outlined" />
+    <MudButton OnClick="SaveUsername" Color="Color.Primary" Class="ml-2">Save</MudButton>
+</MudContainer>
+
+@code {
+    private string? Username { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsername();
+    }
+
+    private async Task SaveUsername()
+    {
+        await StorageService.SetUserNameAsync(Username ?? string.Empty);
+    }
+
+    private async Task LoadUsername()
+    {
+        Username = await StorageService.GetUserNameAsync();
+    }
+}

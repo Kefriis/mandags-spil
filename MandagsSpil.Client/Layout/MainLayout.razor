@@ -11,9 +11,13 @@
                 <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
                 <MudNavLink Href="/weapon-select" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">
                     Weapon Select</MudNavLink>
-                <MudNavLink Href="/nation-select" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Circle">
+                <MudNavLink Href="@weaponWheelPath" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Circle">
                     Weapon Wheel</MudNavLink>
+                <MudNavLink Href="@classModePath" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">
+                    Class Mode</MudNavLink>
                 <MudNavLink Href="/Dirt3" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">Dirt 3
+                </MudNavLink>
+                <MudNavLink Href="/Settings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Settings
                 </MudNavLink>
             </MudNavMenu>
         </MudDrawer>
@@ -25,4 +29,7 @@
 
 @code {
     bool _drawerOpen = false;
+
+    private static string weaponWheelPath = "/nation-select/" + GameModeConstants.Lottery;
+    private static string classModePath = "/nation-select/" + GameModeConstants.Lobby;
 }

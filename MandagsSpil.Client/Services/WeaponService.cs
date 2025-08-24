@@ -1,4 +1,5 @@
 using System;
+using MandagsSpil.Shared.Contracts;
 
 namespace MandagsSpil.Client.Services;
 
@@ -52,18 +53,18 @@ public static class WeaponService
     new Weapon { Number = 5, Name = "Scoped Mosin-Nagant", Nation = "Russian", Weight = 2 },
     new Weapon { Number = 6, Name = "Shotgun", Nation = "Russian", Weight = 1 } // shotgun
 };
-    public static List<Weapon> GetWeaponsByNation(string nation)
+    public static List<Weapon> GetWeaponsByNation(NationEnum? nation)
     {
+        if (nation == null)
+        {
+            return new List<Weapon>();
+        }
         return nation switch
         {
-            "american" => americanWeapons,
-            "us" => americanWeapons,
-            "german" => germanWeapons,
-            "de" => germanWeapons,
-            "british" => britishWeapons,
-            "uk" => britishWeapons,
-            "russian" => russianWeapons,
-            "ru" => russianWeapons,
+            NationEnum.USA => americanWeapons,
+            NationEnum.Germany => germanWeapons,
+            NationEnum.UK => britishWeapons,
+            NationEnum.USSR => russianWeapons,
             _ => new List<Weapon>()
         };
     }
