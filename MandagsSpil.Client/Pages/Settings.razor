@@ -1,29 +1,47 @@
 ﻿@page "/Settings"
 @inject StorageService StorageService
+@inject Cod2State Cod2State
+@inject ISnackbar Snackbar
 
 <HeaderTitle Title="Settings" />
 <PageTitle>Settings</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
-    <MudTextField @bind-Value="Username" Label="Username" Variant="Variant.Outlined" />
-    <MudButton OnClick="SaveUsername" Color="Color.Primary" Class="ml-2">Save</MudButton>
+    <MudStack Row="true">
+        <MudTextField @bind-Value="Username" Label="Username" Variant="Variant.Outlined" />
+        <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled" Class="ml-2">Save
+        </MudButton>
+    </MudStack>
+
+
+    <MudSwitch @bind-Value="IsDeveloperMode" Color="Color.Secondary" Class="mt-4" T="bool"
+        @bind-Value:after="SaveDeveloperMode">
+        Developer Mode
+    </MudSwitch>
+
 </MudContainer>
 
 @code {
     private string? Username { get; set; }
+    private bool IsDeveloperMode { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadUsername();
+        Username = await StorageService.GetUserNameAsync();
+        IsDeveloperMode = await StorageService.GetDeveloperModeAsync();
     }
 
-    private async Task SaveUsername()
+    private async Task Save()
     {
         await StorageService.SetUserNameAsync(Username ?? string.Empty);
+        Cod2State.SetUserName(Username ?? "Unknown Soldier");
+        Snackbar.Add("Username saved", Severity.Success);
     }
 
-    private async Task LoadUsername()
+    private async Task SaveDeveloperMode()
     {
-        Username = await StorageService.GetUserNameAsync();
+        await StorageService.SetDeveloperModeAsync(IsDeveloperMode);
+        Cod2State.SetDeveloperMode(IsDeveloperMode);
+        Snackbar.Add("Developer mode setting saved", Severity.Success);
     }
 }
