@@ -15,8 +15,8 @@ builder.Services.AddSignalR();
 
 builder.Services.AddResponseCompression(opts =>
 {
-   opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-       [ "application/octet-stream" ]);
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        ["application/octet-stream"]);
 });
 
 builder.Services.AddCors(options =>
@@ -36,11 +36,8 @@ var app = builder.Build();
 app.MapGet("/cod2/classes", (LobbyStateService lobbyStateService) => lobbyStateService.ClassesByNation);
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
