@@ -11,31 +11,31 @@ public class LobbyStateService
     {
         [NationEnum.USA] = new()
         {
-            new ClassInfo("Rifleman", new List<string> { "M1 Garand", "M1A1 Carbine" }),
-            new ClassInfo("Support Gunner", new List<string> { "BAR (Browning Automatic Rifle)" }),
-            new ClassInfo("Sniper", new List<string> { "Springfield" }),
-            new ClassInfo("Engineer", new List<string> { "Thompson", "Grease Gun", "Shot gun" })
+            new ClassInfo(ClassNameEnum.Rifleman, new List<string> { "M1 Garand", "M1A1 Carbine" }, 8),
+            new ClassInfo(ClassNameEnum.Support, new List<string> { "BAR (Browning Automatic Rifle)" }, 2),
+            new ClassInfo(ClassNameEnum.Sniper, new List<string> { "Springfield" }, 1),
+            new ClassInfo(ClassNameEnum.Engineer, new List<string> { "Thompson", "Grease Gun", "Shot gun" }, 2)
         },
         [NationEnum.UK] = new()
         {
-            new ClassInfo("Rifleman", new List<string> { "Lee-Enfield"}),
-            new ClassInfo("Support Gunner", new List<string> { "Bren" }),
-            new ClassInfo("Sniper", new List<string> { "Scoped Lee-Enfield" }),
-            new ClassInfo("Engineer", new List<string> { "Sten", "Shot gun" })
+            new ClassInfo(ClassNameEnum.Rifleman, new List<string> { "Lee-Enfield"}, 8),
+            new ClassInfo(ClassNameEnum.Support, new List<string> { "Bren" }, 2),
+            new ClassInfo(ClassNameEnum.Sniper, new List<string> { "Scoped Lee-Enfield" }, 1),
+            new ClassInfo(ClassNameEnum.Engineer, new List<string> { "Sten", "Shot gun" }, 2)
         },
         [NationEnum.Germany] = new()
         {
-            new ClassInfo("Rifleman", new List<string> { "Kar98k", "Gewehr 43" }),
-            new ClassInfo("Support Gunner", new List<string> { "MP44" }),
-            new ClassInfo("Sniper", new List<string> { "Scoped Kar98k" }),
-            new ClassInfo("Engineer", new List<string> { "MP40", "Shot gun" })
+            new ClassInfo(ClassNameEnum.Rifleman, new List<string> { "Kar98k", "Gewehr 43" }, 8),
+            new ClassInfo(ClassNameEnum.Support, new List<string> { "MP44" }, 2),
+            new ClassInfo(ClassNameEnum.Sniper, new List<string> { "Scoped Kar98k" }, 1),
+            new ClassInfo(ClassNameEnum.Engineer, new List<string> { "MP40", "Shot gun" }, 2)
         },
         [NationEnum.USSR] = new()
         {
-            new ClassInfo("Rifleman", new List<string> { "Mosin-Nagant", "SVT-40" }),
-            new ClassInfo("Support Gunner", new List<string> { "PPSH" }),
-            new ClassInfo("Sniper", new List<string> { "Scoped Mosin-Nagant" }),
-            new ClassInfo("Engineer", new List<string> { "PPS-42", "Shot gun" })
+            new ClassInfo(ClassNameEnum.Rifleman, new List<string> { "Mosin-Nagant", "SVT-40" }, 8),
+            new ClassInfo(ClassNameEnum.Support, new List<string> { "PPSH" }, 2),
+            new ClassInfo(ClassNameEnum.Sniper, new List<string> { "Scoped Mosin-Nagant" }, 1),
+            new ClassInfo(ClassNameEnum.Engineer, new List<string> { "PPS-42", "Shot gun" }, 2)
         }
     };
 
@@ -52,7 +52,7 @@ public class LobbyStateService
         {
             if (!players.Any(p => p.Id == playerId))
             {
-                players.Add(new PlayerInfo(userName, nation, null, playerId, connectionId));
+                players.Add(new PlayerInfo(userName, nation, ClassNameEnum.Unknown, playerId, connectionId));
             }
         }
     }
@@ -91,7 +91,7 @@ public class LobbyStateService
         return NationEnum.Unknown;
     }
 
-    public void SelectClass(string userName, NationEnum nation, string className, Guid playerId)
+    public (bool success, string? message) SelectClass(string userName, NationEnum nation, ClassNameEnum className, Guid playerId)
     {
         if (_playersByNation.TryGetValue(nation, out var players))
         {
@@ -101,16 +101,29 @@ public class LobbyStateService
                 if (playerIndex >= 0)
                 {
                     var player = players[playerIndex];
-                    bool classExists = _classesByNation.TryGetValue(nation, out var classes)
-                        && classes.Any(c => c.Name == className);
 
-                    if (classExists)
+                    bool classExists = _classesByNation.TryGetValue(nation, out var classes);
+
+                    var classInfo = classes?.FirstOrDefault(c => c.Name == className);
+                    int currentCount = players.Count(p => p.SelectedClass == className);
+
+                    if (classInfo is not null)
                     {
-                        players[playerIndex] = player with { SelectedClass = className };
+                        if (classInfo.MaxPlayers > currentCount || player.SelectedClass == className)
+                        {
+                            players[playerIndex] = player with { SelectedClass = className };
+                            return (true, null);
+                        }
+                        else
+                        {
+                            return (false, $"Class {className} is full. Max players: {classInfo.MaxPlayers}");
+                        }
                     }
                 }
             }
         }
+        
+        return (false, $"Could not select class {className} for player {userName}.");
     }
 
     public LobbyStateDto GetLobbyState(NationEnum nation)

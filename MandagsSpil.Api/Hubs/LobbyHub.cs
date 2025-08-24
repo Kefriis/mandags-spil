@@ -34,12 +34,25 @@ public class LobbyHub : Hub
         await Clients.Group(nation.ToString()).SendAsync("LobbyUpdated", _lobbyState.GetLobbyState(mappedNation));
     }
 
-    public async Task SelectClass(string userName, string nation, string className, Guid playerId)
+    public async Task<ResponseType> SelectClass(string userName, string nation, string className, Guid playerId)
     {
         var mappedNation = Enum.Parse<NationEnum>(nation, true);
-        _lobbyState.SelectClass(userName, mappedNation, className, playerId);
+        var classEnum = Enum.Parse<ClassNameEnum>(className, true);
+        var result = _lobbyState.SelectClass(userName, mappedNation, classEnum, playerId);
 
-        await Clients.Group(nation.ToString()).SendAsync("LobbyUpdated", _lobbyState.GetLobbyState(mappedNation));
+        var mappedResult = new ResponseType
+        {
+            Success = result.success,
+            Message = result.message
+        };
+
+        if (result.success)
+        {
+            await Clients.Group(nation.ToString()).SendAsync("LobbyUpdated", _lobbyState.GetLobbyState(mappedNation));
+            return mappedResult;
+        }
+
+        return mappedResult;
     }
 
     public LobbyStateDto GetLobbyState(string nation)

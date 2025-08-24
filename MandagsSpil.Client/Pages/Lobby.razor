@@ -5,10 +5,14 @@
 @inject NavigationManager Navigation
 @inject Cod2State Cod2State
 @inject StorageService StorageService
+@inject IConfiguration Configuration
+@inject ISnackbar Snackbar
 
 <HeaderTitle Title="@($"Lobby: {Nation}")" />
 <PageTitle>Lobby</PageTitle>
 <ShowBackButton />
+
+<OverlayWithText Text="Connecting..." Visible="_loading"/>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
     <MudGrid>
@@ -19,10 +23,10 @@
                 <MudList Dense="true" T="PlayerInfo">
                     @foreach (var p in Players)
                     {
-                        <MudListItem Selected="@IsCurrentUser(p.UserName)">
+                        <MudListItem Selected="@IsCurrentUser(p.Id)">
                             <div class="d-flex justify-space-between">
                                 <div>@p.UserName</div>
-                                <div>@(p.SelectedClass ?? "(No class selected)")</div>
+                                <div>@(p.SelectedClass == ClassNameEnum.Unknown  ? "(No class selected)" : p.SelectedClass.ToString())</div>
                             </div>
                         </MudListItem>
                     }
@@ -69,32 +73,49 @@
     [Parameter] public string? UserName { get; set; }
     [Parameter] public string? Nation { get; set; }
 
+    private bool _loading = false;
+
     private HubConnection? hubConnection;
 
     private List<PlayerInfo> Players = new();
     private List<ClassInfo> Classes = new();
 
-    private string? SelectedClass;
+    private ClassNameEnum SelectedClass;
     private ClassInfo? CurrentClass => Classes.FirstOrDefault(c => c.Name == SelectedClass);
 
     protected override async Task OnInitializedAsync()
     {
+        _loading = true;
         UserName = await StorageService.GetUserNameAsync();
 
+        var backendUrl = Configuration["backendUrl"];
+
         hubConnection = new HubConnectionBuilder()
-        .WithUrl($"http://localhost:5223/lobbyhub")
+        .WithUrl($"{backendUrl}/lobbyhub")
         .WithAutomaticReconnect()
         .Build();
 
         hubConnection.On<LobbyStateDto>("LobbyUpdated", OnLobbyUpdated);
 
-        await hubConnection.StartAsync();
+        try
+        {
+            await hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {   
+            Snackbar.Add("Could not connect to server. Please try again later.", Severity.Error);
+            Navigation.NavigateTo("/nation-select/" + GameModeConstants.Lobby);
+
+            _loading = false;
+            return;
+        }
 
         await hubConnection.InvokeAsync("JoinLobby", UserName, Nation, Cod2State.Id);
 
         // Initial fetch of lobby state
         LobbyStateDto? lobby = await hubConnection.InvokeAsync<LobbyStateDto>("GetLobbyState", Nation);
         OnLobbyUpdated(lobby);
+        _loading = false;
     }
 
     private void OnLobbyUpdated(LobbyStateDto lobby)
@@ -130,18 +151,21 @@
         }
     }
 
-    private async Task OnClassSelected(string newClass)
+    private async Task OnClassSelected(ClassNameEnum newClass)
     {
+        if (hubConnection is not null){
+            var result = await hubConnection.InvokeAsync<ResponseType>("SelectClass", UserName, Nation, newClass.ToString(), Cod2State.Id);
+            
+            if (!result.Success)
+            {
+                Snackbar.Add(result.Message ?? "Could not select class", Severity.Error);
+                return;
+            }   
+        }
         SelectedClass = newClass;
-        if (hubConnection is not null)
-            await hubConnection.InvokeAsync("SelectClass", UserName, Nation, SelectedClass, Cod2State.Id);
-
-        Console.WriteLine($"Selected class: {SelectedClass}");
-
-        StateHasChanged();
     }
 
-    private bool IsCurrentUser(string userName) => userName == UserName;
+    private bool IsCurrentUser(Guid id) => id == Cod2State.Id;
 
     public async ValueTask DisposeAsync()
     {
