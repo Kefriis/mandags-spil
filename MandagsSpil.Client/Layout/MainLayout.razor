@@ -13,7 +13,8 @@
             </MudDrawerHeader>
             <MudNavMenu Rounded="true" Margin="Margin.Normal" Color="Color.Tertiary" Class="pa-2">
                 <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-                <MudNavLink Href="/weapon-select" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">
+<MudNavGroup Title="Call Of Duty 2" Expanded="true">
+            <MudNavLink Href="/weapon-select" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">
                     Weapon Select</MudNavLink>
                 <MudNavLink Href="@weaponWheelPath" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Circle">
                     Weapon Wheel</MudNavLink>
@@ -22,6 +23,8 @@
                     <MudNavLink Href="@classModePath" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">
                         Class Mode</MudNavLink>
                 }
+        </MudNavGroup>
+                
                 <MudNavLink Href="/Dirt3" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Home">Dirt 3
                 </MudNavLink>
                 <MudNavLink Href="/Settings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Settings
