@@ -12,6 +12,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ./MandagsSpil.Api
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -62,4 +65,5 @@ jobs:
           app-name: 'mandagsApp'
           slot-name: 'Production'
           package: .
+
           
