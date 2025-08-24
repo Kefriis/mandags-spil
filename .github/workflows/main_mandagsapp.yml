@@ -5,6 +5,8 @@ name: Build and deploy ASP.Net Core app to Azure Web App - mandagsApp
 
 on:
   push:
+    paths:
+      - ./MandagsSpil.API
     branches:
       - main
   workflow_dispatch:
@@ -12,9 +14,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: ./MandagsSpil.Api
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -67,3 +66,4 @@ jobs:
           package: .
 
           
+
