@@ -1,0 +1,25 @@
+﻿@page "/user"
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<HeaderTitle Title="User" />
+<PageTitle>User</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="pt-4">
+    Logged in as @UserPrincipal?.Identity?.Name. <a href="logout"><span class="bi bi-door-closed-fill"
+            aria-hidden="true" style="vertical-align:middle"></span> Logout</a>
+
+    <MudNavLink Href="/logout?ReturnUrl=/" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Logout">Logout</MudNavLink>
+</MudContainer>
+
+
+@code {
+    private ClaimsPrincipal? UserPrincipal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider
+        .GetAuthenticationStateAsync();
+        UserPrincipal = authState.User;
+    }
+}

@@ -1,0 +1,111 @@
+﻿@page "/register"
+@using System.ComponentModel.DataAnnotations
+@inject IAccountManagement Acct
+
+<PageTitle>Register</PageTitle>
+<HeaderTitle Title="Register" />
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="pt-4">
+    <AuthorizeView>
+        <Authorized>
+            <MudAlert Severity="Severity.Success" Elevation="0">
+                You're already logged in as @context.User.Identity?.Name.
+            </MudAlert>
+        </Authorized>
+        <NotAuthorized>
+            @if (formResult.Succeeded)
+            {
+                <MudAlert Severity="Severity.Success" Elevation="0">
+                    You successfully registered. Now you can <MudLink Href="login">login</MudLink>.
+                </MudAlert>
+            }
+            else
+            {
+                @foreach (var error in formResult.ErrorList)
+                {
+                    <MudAlert Severity="Severity.Error" Elevation="0">@error</MudAlert>
+                }
+                <MudPaper Class="pa-6" Elevation="1">
+                    <EditForm Model="Input" method="post" OnValidSubmit="RegisterUserAsync"
+                                  FormName="register" Context="editform_context">
+                        <DataAnnotationsValidator />
+                        <MudText Typo="Typo.h5" Class="mb-2">Register as a new user.</MudText>
+                        <MudDivider Class="mb-4" />
+                        <MudStack Spacing="2">
+                            <MudTextField @bind-Value="Input.Email"
+                                          Label="Email"
+                                          For="@(() => Input.Email)"
+                                          Required="true"
+                                          Variant="Variant.Outlined"
+                                          InputType="InputType.Email"
+                                          Immediate="true"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Email"
+                                          />
+                            <ValidationMessage For="() => Input.Email" />
+
+                            <MudTextField @bind-Value="Input.Password"
+                                          Label="Password"
+                                          For="@(() => Input.Password)"
+                                          Required="true"
+                                          Variant="Variant.Outlined"
+                                          InputType="InputType.Password"
+                                          Immediate="true"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Lock"
+                                          />
+                            <ValidationMessage For="() => Input.Password" />
+
+                            <MudTextField @bind-Value="Input.ConfirmPassword"
+                                          Label="Confirm Password"
+                                          For="@(() => Input.ConfirmPassword)"
+                                          Required="true"
+                                          Variant="Variant.Outlined"
+                                          InputType="InputType.Password"
+                                          Immediate="true"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Lock"
+                                          />
+                            <ValidationMessage For="() => Input.ConfirmPassword" />
+
+                            <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">
+                                Register
+                            </MudButton>
+                        </MudStack>
+                    </EditForm>
+                </MudPaper>
+            }
+        </NotAuthorized>
+    </AuthorizeView>
+</MudContainer>
+
+@code {
+    private FormResult formResult = new();
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    public async Task RegisterUserAsync()
+    {
+        formResult = await Acct.RegisterAsync(Input.Email, Input.Password);
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "Password")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [DataType(DataType.Password)]
+        [Compare("Password")]
+        [Display(Name = "Confirm Password")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+}

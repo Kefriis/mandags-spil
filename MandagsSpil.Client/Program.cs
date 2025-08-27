@@ -6,6 +6,7 @@ using MandagsSpil.Client.Layout.AppbarComponents;
 using MudBlazor;
 using Toolbelt.Blazor.Extensions.DependencyInjection;
 using MandagsSpil.Client.Services;
+using MandagsSpil.Client.Identity;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -23,6 +24,7 @@ builder.Services.AddPWAUpdater();
 builder.Services.AddSingleton<Cod2State>();
 builder.Services.AddSingleton<StorageService>();
 
+builder.AddIdentityServices();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

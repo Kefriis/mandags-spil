@@ -1,5 +1,7 @@
-﻿@inject Cod2State Cod2State
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject Cod2State Cod2State
 
+﻿<CascadingAuthenticationState>
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
@@ -12,6 +14,7 @@
         </LayoutView>
     </NotFound>
 </Router>
+</CascadingAuthenticationState>
 
 @* Required *@
 <MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode" />

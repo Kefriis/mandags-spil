@@ -1,0 +1,51 @@
+﻿@page "/logout"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAccountManagement Acct
+@inject NavigationManager Navigation
+
+<PageTitle>Logout</PageTitle>
+<HeaderTitle Title="Logout" />
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="pt-4">
+
+    <AuthorizeView @ref="authView">
+        <Authorized>
+            <div class="alert alert-info">Logging you out...</div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="alert alert-success">You're logged out</div>
+        </NotAuthorized>
+    </AuthorizeView>
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private AuthorizeView? authView;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await Acct.CheckAuthenticatedAsync())
+        {
+            try
+            {
+                // Need to wait for the AuthorizeView to render before we can call StateHasChanged on it
+                // otherwise we get an InvalidOperationException: 'Cannot call StateHasChanged while rendering.'
+                // This is a bit hacky but it works.
+                await Acct.LogoutAsync();
+                await Task.Delay(500);
+
+                if (!string.IsNullOrEmpty(ReturnUrl))
+                {
+                    Navigation.NavigateTo(ReturnUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating AuthorizeView state: {ex.Message}");
+            }
+
+        }
+    }
+}
