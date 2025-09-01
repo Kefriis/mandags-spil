@@ -6,8 +6,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using MandagsSpil.Api.Endpoints;
+using MandagsSpil.Api.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddLogging(configure =>
+{
+    configure.AddConsole();
+    configure.SetMinimumLevel(LogLevel.Information); // or whatever level you need
+});
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -24,9 +31,8 @@ builder.Services.AddAuthorizationBuilder();
 builder.Services.AddDbContext<AppDbContext>(
     options =>
     {
-        options.UseInMemoryDatabase("AppDb");
-        //For debugging only: options.EnableDetailedErrors(true);
-        //For debugging only: options.EnableSensitiveDataLogging(true);
+        options.UseNpgsql(builder.Configuration.GetValue<string>("DefaultConnection"));
+        //options.UseInMemoryDatabase("AppDb");
     });
 
 builder.Services.AddIdentityCore<AppUser>()
@@ -34,11 +40,16 @@ builder.Services.AddIdentityCore<AppUser>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddApiEndpoints();
 
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+    options.TokenLifespan = TimeSpan.FromHours(3));
+
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<LobbyStateService>();
 
-builder.Services.AddSignalR();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 builder.Services.AddResponseCompression(opts =>
 {

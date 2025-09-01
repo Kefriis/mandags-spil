@@ -28,4 +28,7 @@ public interface IAccountManagement
     public Task<FormResult> RegisterAsync(string email, string password);
 
     public Task<bool> CheckAuthenticatedAsync();
+
+    Task<bool> ForgotPasswordAsync(string email);
+    Task<FormResult> ResetPasswordAsync(string email, string resetCode,    string newPassword);
 }

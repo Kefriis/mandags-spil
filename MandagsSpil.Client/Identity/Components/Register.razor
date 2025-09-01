@@ -1,5 +1,6 @@
 ﻿@page "/register"
 @using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
 @inject IAccountManagement Acct
 
 <PageTitle>Register</PageTitle>
@@ -26,53 +27,46 @@
                     <MudAlert Severity="Severity.Error" Elevation="0">@error</MudAlert>
                 }
                 <MudPaper Class="pa-6" Elevation="1">
-                    <EditForm Model="Input" method="post" OnValidSubmit="RegisterUserAsync"
-                                  FormName="register" Context="editform_context">
-                        <DataAnnotationsValidator />
-                        <MudText Typo="Typo.h5" Class="mb-2">Register as a new user.</MudText>
-                        <MudDivider Class="mb-4" />
-                        <MudStack Spacing="2">
-                            <MudTextField @bind-Value="Input.Email"
-                                          Label="Email"
-                                          For="@(() => Input.Email)"
-                                          Required="true"
-                                          Variant="Variant.Outlined"
-                                          InputType="InputType.Email"
-                                          Immediate="true"
-                                          Adornment="Adornment.Start"
-                                          AdornmentIcon="@Icons.Material.Filled.Email"
-                                          />
-                            <ValidationMessage For="() => Input.Email" />
-
-                            <MudTextField @bind-Value="Input.Password"
-                                          Label="Password"
-                                          For="@(() => Input.Password)"
-                                          Required="true"
-                                          Variant="Variant.Outlined"
-                                          InputType="InputType.Password"
-                                          Immediate="true"
-                                          Adornment="Adornment.Start"
-                                          AdornmentIcon="@Icons.Material.Filled.Lock"
-                                          />
-                            <ValidationMessage For="() => Input.Password" />
-
-                            <MudTextField @bind-Value="Input.ConfirmPassword"
-                                          Label="Confirm Password"
-                                          For="@(() => Input.ConfirmPassword)"
-                                          Required="true"
-                                          Variant="Variant.Outlined"
-                                          InputType="InputType.Password"
-                                          Immediate="true"
-                                          Adornment="Adornment.Start"
-                                          AdornmentIcon="@Icons.Material.Filled.Lock"
-                                          />
-                            <ValidationMessage For="() => Input.ConfirmPassword" />
-
-                            <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">
-                                Register
-                            </MudButton>
-                        </MudStack>
-                    </EditForm>
+               <EditForm Model="@model" OnValidSubmit="RegisterUserAsync" Context="editContext">
+<DataAnnotationsValidator/>
+<MudGrid>
+    <MudItem xs="12" sm="7">
+        <MudCard>
+            <MudCardContent>
+                <MudTextField Label="Email" Class="mt-3"
+                              @bind-Value="model.Email" For="@(() => model.Email)"/>
+                <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                              @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password"/>
+                <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                              @bind-Value="model.ConfirmPassword" For="@(() => model.ConfirmPassword)" InputType="InputType.Password"/>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" sm="5">
+        <MudPaper Class="pa-4 mud-height-full">
+            <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+            @if (success)
+            {
+                <MudText Color="Color.Success">Success</MudText>
+            }
+            else
+            {
+                <MudText Color="@Color.Error">
+                    <ValidationSummary />
+                </MudText>
+            }
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12">
+        <MudText Typo="Typo.body2" Align="Align.Center">
+            Fill out the form correctly to see the success message.
+        </MudText>
+    </MudItem>
+</MudGrid>
+</EditForm>
                 </MudPaper>
             }
         </NotAuthorized>
@@ -80,14 +74,19 @@
 </MudContainer>
 
 @code {
+    bool success;
+    string[] errors = { };
+    MudTextField<string>? pwField1;
+    MudForm? form;
     private FormResult formResult = new();
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    private InputModel model { get; set; } = new();
 
     public async Task RegisterUserAsync()
     {
-        formResult = await Acct.RegisterAsync(Input.Email, Input.Password);
+        Console.WriteLine($"Registering {model.Email}");
+        formResult = await Acct.RegisterAsync(model.Email, model.Password);
     }
 
     private sealed class InputModel
@@ -107,5 +106,31 @@
         [Compare("Password")]
         [Display(Name = "Confirm Password")]
         public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
+      private IEnumerable<string> PasswordStrength(string pw)
+    {
+        if (string.IsNullOrWhiteSpace(pw))
+        {
+            yield return "Password is required!";
+            yield break;
+        }
+        if (pw.Length < 8)
+            yield return "Password must be at least of length 8";
+        if (!Regex.IsMatch(pw, @"[A-Z]"))
+            yield return "Password must contain at least one capital letter";
+        if (!Regex.IsMatch(pw, @"[a-z]"))
+            yield return "Password must contain at least one lowercase letter";
+        if (!Regex.IsMatch(pw, @"[0-9]"))
+            yield return "Password must contain at least one digit";
+    }
+
+    private string PasswordMatch(string arg)
+    {
+        if(pwField1 == null)
+            return "Internal error: pwField1 is null";
+        if (pwField1.Value != arg)
+            return "Passwords don't match";
+        return string.Empty;
     }
 }

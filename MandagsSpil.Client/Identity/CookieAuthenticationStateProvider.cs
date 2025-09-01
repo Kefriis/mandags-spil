@@ -251,4 +251,79 @@ public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFact
         await GetAuthenticationStateAsync();
         return authenticated;
     }
+
+    public async Task<bool> ForgotPasswordAsync(string email)
+    {
+        try
+        {
+            using var result = await httpClient.PostAsJsonAsync(
+                "/identity/resetPassword", new
+                {
+                    email
+                });
+
+            if (result.IsSuccessStatusCode)
+            {
+                return true;
+            }
+        }
+        catch { }
+
+        return false;
+    }
+
+    public async Task<FormResult> ResetPasswordAsync(string email, string resetCode,
+        string newPassword)
+    {
+        string[] defaultDetail = ["An unknown error prevented password reset."];
+
+        try
+        {
+            using var result = await httpClient.PostAsJsonAsync(
+                "/identity/resetPassword", new
+                {
+                    email,
+                    resetCode,
+                    newPassword
+                });
+
+            if (result.IsSuccessStatusCode)
+            {
+                return new FormResult { Succeeded = true };
+            }
+
+            var details = await result.Content.ReadAsStringAsync();
+            var problemDetails = JsonDocument.Parse(details);
+            var errors = new List<string>();
+            var errorList = problemDetails.RootElement.GetProperty("errors");
+
+            foreach (var errorEntry in errorList.EnumerateObject())
+            {
+                if (errorEntry.Value.ValueKind == JsonValueKind.String)
+                {
+                    errors.Add(errorEntry.Value.GetString()!);
+                }
+                else if (errorEntry.Value.ValueKind == JsonValueKind.Array)
+                {
+                    errors.AddRange(
+                        errorEntry.Value.EnumerateArray().Select(
+                            e => e.GetString() ?? string.Empty)
+                        .Where(e => !string.IsNullOrEmpty(e)));
+                }
+            }
+
+            return new FormResult
+            {
+                Succeeded = false,
+                ErrorList = problemDetails == null ? defaultDetail : [.. errors]
+            };
+        }
+        catch { }
+
+        return new FormResult
+        {
+            Succeeded = false,
+            ErrorList = defaultDetail
+        };
+    }
 }

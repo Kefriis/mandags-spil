@@ -1,15 +1,25 @@
 ﻿@page "/user"
 @using System.Security.Claims
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 
 <HeaderTitle Title="User" />
 <PageTitle>User</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="pt-4">
-    Logged in as @UserPrincipal?.Identity?.Name. <a href="logout"><span class="bi bi-door-closed-fill"
-            aria-hidden="true" style="vertical-align:middle"></span> Logout</a>
+    <MudGrid>
+        <MudItem xs="6">
+            <MudText Typo="Typo.h6">User:</MudText>
+        </MudItem>
+        <MudItem xs="6">
+            <MudText Typo="Typo.h6">@UserPrincipal?.Identity?.Name</MudText>
+        </MudItem>
+        <MudItem xs="12">
+            <MudButton StartIcon="@Icons.Material.Filled.Logout" OnClick="NavigateLogout" Size="Size.Large"
+                FullWidth="true" Variant="Variant.Outlined">Logout</MudButton>
+        </MudItem>
+    </MudGrid>
 
-    <MudNavLink Href="/logout?ReturnUrl=/" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Logout">Logout</MudNavLink>
 </MudContainer>
 
 
@@ -21,5 +31,10 @@
         var authState = await AuthenticationStateProvider
         .GetAuthenticationStateAsync();
         UserPrincipal = authState.User;
+    }
+
+    private void NavigateLogout()
+    {
+        NavigationManager.NavigateTo("/logout?ReturnUrl=/");
     }
 }
