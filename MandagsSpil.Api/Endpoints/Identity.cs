@@ -67,7 +67,7 @@ internal static class IdentityEndpoints
 
                 var validToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-                await emailSender.SendResetPasswordEmailAsync(model.Email, validToken);
+                await emailSender.SendResetPasswordEmailAsync(model.Email, validToken, model.CallBackUrl);
 
                 return Results.Ok();
             }

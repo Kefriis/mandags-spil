@@ -13,20 +13,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddLogging(configure =>
 {
     configure.AddConsole();
-    configure.SetMinimumLevel(LogLevel.Information); // or whatever level you need
+    configure.SetMinimumLevel(LogLevel.Information);
 });
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
+builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
+    .AddIdentityCookies();
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
+
 builder.Services.AddAuthorizationBuilder();
 builder.Services.AddDbContext<AppDbContext>(
     options =>
@@ -42,6 +43,9 @@ builder.Services.AddIdentityCore<AppUser>()
 
 builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
     options.TokenLifespan = TimeSpan.FromHours(3));
+
+builder.Services.Configure<MailOptions>(
+    builder.Configuration.GetSection(MailOptions.Mail));
 
 builder.Services.AddEndpointsApiExplorer();
 

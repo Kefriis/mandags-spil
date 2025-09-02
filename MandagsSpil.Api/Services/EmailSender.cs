@@ -15,11 +15,10 @@ public class EmailSender : IEmailSender
     public EmailSender(ILogger<EmailSender> logger, IOptions<MailOptions> options)
     {
         _options = options.Value;
-        // var emailSenderPassword = "ffdd unvg qwtv ailr";
 
-        var smtpClient = new SmtpClient("smtp.gmail.com");
+        var smtpClient = new SmtpClient(_options.Host);
 
-        smtpClient.Port = 587;
+        smtpClient.Port = _options.Port;
         smtpClient.Credentials = new NetworkCredential(_options.SenderEmail, _options.EmailSenderPassword);
         smtpClient.EnableSsl = true;
         smtpClient.Timeout = 5000;
@@ -29,7 +28,7 @@ public class EmailSender : IEmailSender
         _logger = logger;
     }
     
-    public async Task SendResetPasswordEmailAsync(string toEmail, string token)
+    public async Task SendResetPasswordEmailAsync(string toEmail, string token, string callBackUrl)
     {
         try
         {
@@ -40,10 +39,14 @@ public class EmailSender : IEmailSender
             mailMessage.From = new MailAddress(_options.SenderEmail);
             mailMessage.Subject = "MandagSpil - Reset Password";
 
+            var validCallback = callBackUrl + token;
+
             var emailBody = $"<h1>Password Reset Request</h1>" +
                 $"<p>You requested a password reset. Please use the token below to reset your password:</p>" +
                 $"<p>Token:</p>" +
-                $"<p>{token}</p>";
+                $"<p>{token}</p>" +
+                $"<p>If you did not request a password reset, please ignore this email.</p>" +
+                $"Link: <a href='{validCallback}'>{validCallback}</a>";
 
             mailMessage.Body = emailBody;
             mailMessage.IsBodyHtml = true;

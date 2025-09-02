@@ -3,19 +3,20 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components;
 using MandagsSpil.Client.Identity.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace MandagsSpil.Client.Identity;
 
 /// <summary>
-/// Handles state for cookie-based auth.
+/// Handles state for cookie-based auth by communicating with the backend API.
 /// </summary>
 /// <remarks>
 /// Create a new instance of the auth provider.
 /// </remarks>
 /// <param name="httpClientFactory">Factory to retrieve auth client.</param>
-public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFactory, ILogger<CookieAuthenticationStateProvider> logger)
+public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFactory, ILogger<CookieAuthenticationStateProvider> logger, NavigationManager navigationManager)
     : AuthenticationStateProvider, IAccountManagement
 {
     /// <summary>
@@ -256,10 +257,13 @@ public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFact
     {
         try
         {
+            // Construct the full URL for the password reset page.
+            var callBackUrl = $"{navigationManager.BaseUri}reset-password?Email={email}&Code=";
             using var result = await httpClient.PostAsJsonAsync(
-                "/identity/resetPassword", new
+                "identity/forgotPassword", new
                 {
-                    email
+                    email,
+                    callBackUrl
                 });
 
             if (result.IsSuccessStatusCode)
@@ -267,7 +271,11 @@ public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFact
                 return true;
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            // Log the error but don't expose details to the user for security.
+            logger.LogError(ex, "Forgot password request for {Email} failed.", email);
+        }
 
         return false;
     }
@@ -279,11 +287,12 @@ public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFact
 
         try
         {
+            var token = resetCode;
             using var result = await httpClient.PostAsJsonAsync(
-                "/identity/resetPassword", new
+                "identity/resetPassword", new
                 {
                     email,
-                    resetCode,
+                    token,
                     newPassword
                 });
 
@@ -318,7 +327,11 @@ public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFact
                 ErrorList = problemDetails == null ? defaultDetail : [.. errors]
             };
         }
-        catch { }
+        catch (Exception ex)
+        {
+            // Log the error but don't expose details to the user.
+            logger.LogError(ex, "Password reset for {Email} failed.", email);
+        }
 
         return new FormResult
         {
