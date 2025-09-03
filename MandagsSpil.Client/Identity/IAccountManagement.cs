@@ -30,5 +30,5 @@ public interface IAccountManagement
     public Task<bool> CheckAuthenticatedAsync();
 
     Task<bool> ForgotPasswordAsync(string email);
-    Task<FormResult> ResetPasswordAsync(string email, string resetCode,    string newPassword);
+    Task<IdentityFormResult> ResetPasswordAsync(string email, string resetCode, string newPassword);
 }

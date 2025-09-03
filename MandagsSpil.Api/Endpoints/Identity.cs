@@ -91,7 +91,10 @@ internal static class IdentityEndpoints
 
             var result = await userManager.ResetPasswordAsync(user, validToken, model.NewPassword);
 
-            return Results.Ok(result);
+            if (result.Succeeded)
+                return Results.Ok(result);
+                
+            return Results.BadRequest(result);
         });
     }
 }

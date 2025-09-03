@@ -280,10 +280,12 @@ public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFact
         return false;
     }
 
-    public async Task<FormResult> ResetPasswordAsync(string email, string resetCode,
+    public async Task<IdentityFormResult> ResetPasswordAsync(string email, string resetCode,
         string newPassword)
     {
         string[] defaultDetail = ["An unknown error prevented password reset."];
+
+        var defaultReturn = new IdentityFormResult { Succeeded = false, Errors = [new IdentityError() {Code = "Unknown", Description = "An unknown error prevented password reset."}] };
 
         try
         {
@@ -298,34 +300,19 @@ public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFact
 
             if (result.IsSuccessStatusCode)
             {
-                return new FormResult { Succeeded = true };
+                return new IdentityFormResult { Succeeded = true };
             }
 
             var details = await result.Content.ReadAsStringAsync();
-            var problemDetails = JsonDocument.Parse(details);
-            var errors = new List<string>();
-            var errorList = problemDetails.RootElement.GetProperty("errors");
 
-            foreach (var errorEntry in errorList.EnumerateObject())
-            {
-                if (errorEntry.Value.ValueKind == JsonValueKind.String)
-                {
-                    errors.Add(errorEntry.Value.GetString()!);
-                }
-                else if (errorEntry.Value.ValueKind == JsonValueKind.Array)
-                {
-                    errors.AddRange(
-                        errorEntry.Value.EnumerateArray().Select(
-                            e => e.GetString() ?? string.Empty)
-                        .Where(e => !string.IsNullOrEmpty(e)));
-                }
-            }
+            Console.WriteLine(details);
 
-            return new FormResult
-            {
-                Succeeded = false,
-                ErrorList = problemDetails == null ? defaultDetail : [.. errors]
-            };
+            var parsed = JsonSerializer.Deserialize<IdentityFormResult>(details, jsonSerializerOptions);
+
+            Console.WriteLine(JsonSerializer.Serialize(parsed));
+
+
+            return parsed ?? defaultReturn;
         }
         catch (Exception ex)
         {
@@ -333,10 +320,6 @@ public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFact
             logger.LogError(ex, "Password reset for {Email} failed.", email);
         }
 
-        return new FormResult
-        {
-            Succeeded = false,
-            ErrorList = defaultDetail
-        };
+        return defaultReturn;
     }
 }

@@ -17,3 +17,15 @@ public class FormResult
     /// </summary>
     public string[] ErrorList { get; set; } = [];
 }
+
+public class IdentityFormResult
+{
+    public bool Succeeded { get; set; }
+    public IdentityError[] Errors { get; set; } = [];
+}
+
+public class IdentityError
+{
+    public string Code { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+}
