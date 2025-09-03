@@ -10,10 +10,10 @@
 
     <AuthorizeView @ref="authView">
         <Authorized>
-            <div class="alert alert-info">Logging you out...</div>
+            <MudAlert Severity="Severity.Info" Elevation="0">Logging you out...</MudAlert>
         </Authorized>
         <NotAuthorized>
-            <div class="alert alert-success">You're logged out</div>
+            <MudAlert Severity="Severity.Success" Elevation="0">You're logged out</MudAlert>
         </NotAuthorized>
     </AuthorizeView>
 </MudContainer>

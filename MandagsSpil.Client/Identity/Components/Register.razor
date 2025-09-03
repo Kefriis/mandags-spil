@@ -27,46 +27,24 @@
                     <MudAlert Severity="Severity.Error" Elevation="0">@error</MudAlert>
                 }
                 <MudPaper Class="pa-6" Elevation="1">
-               <EditForm Model="@model" OnValidSubmit="RegisterUserAsync" Context="editContext">
-<DataAnnotationsValidator/>
-<MudGrid>
-    <MudItem xs="12" sm="7">
-        <MudCard>
-            <MudCardContent>
-                <MudTextField Label="Email" Class="mt-3"
-                              @bind-Value="model.Email" For="@(() => model.Email)"/>
-                <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
-                              @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password"/>
-                <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
-                              @bind-Value="model.ConfirmPassword" For="@(() => model.ConfirmPassword)" InputType="InputType.Password"/>
-            </MudCardContent>
-            <MudCardActions>
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton>
-            </MudCardActions>
-        </MudCard>
-    </MudItem>
-    <MudItem xs="12" sm="5">
-        <MudPaper Class="pa-4 mud-height-full">
-            <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
-            @if (success)
-            {
-                <MudText Color="Color.Success">Success</MudText>
-            }
-            else
-            {
-                <MudText Color="@Color.Error">
-                    <ValidationSummary />
-                </MudText>
-            }
-        </MudPaper>
-    </MudItem>
-    <MudItem xs="12">
-        <MudText Typo="Typo.body2" Align="Align.Center">
-            Fill out the form correctly to see the success message.
-        </MudText>
-    </MudItem>
-</MudGrid>
-</EditForm>
+                    <EditForm Model="@model" OnValidSubmit="RegisterUserAsync" Context="editContext">
+                        <DataAnnotationsValidator />
+                        <MudCardContent>
+                            <MudTextField Label="Email" Class="mt-3" @bind-Value="model.Email" For="@(() => model.Email)"
+                                Variant="Variant.Outlined" />
+                            <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                                @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password"
+                                Variant="Variant.Outlined" />
+                            <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                                @bind-Value="model.ConfirmPassword" For="@(() => model.ConfirmPassword)"
+                                InputType="InputType.Password" Variant="Variant.Outlined" />
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                                Class="ml-auto">Register</MudButton>
+                        </MudCardActions>
+
+                    </EditForm>
                 </MudPaper>
             }
         </NotAuthorized>
@@ -108,7 +86,7 @@
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 
-      private IEnumerable<string> PasswordStrength(string pw)
+    private IEnumerable<string> PasswordStrength(string pw)
     {
         if (string.IsNullOrWhiteSpace(pw))
         {
@@ -127,7 +105,7 @@
 
     private string PasswordMatch(string arg)
     {
-        if(pwField1 == null)
+        if (pwField1 == null)
             return "Internal error: pwField1 is null";
         if (pwField1.Value != arg)
             return "Passwords don't match";

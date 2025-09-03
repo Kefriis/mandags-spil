@@ -8,71 +8,40 @@
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="pt-4">
 
-<AuthorizeView>
-    <Authorized>
-        <div class="alert alert-success">You're logged in as @context.User.Identity?.Name.</div>
-    </Authorized>
-    <NotAuthorized>
-        @foreach (var error in formResult.ErrorList)
-        {
-            <div class="alert alert-danger">@error</div>
-        }
-        <div class="row">
-            <div class="col">
-                <section>
-                    <EditForm Model="Input" method="post" OnValidSubmit="LoginUser"
-                              FormName="login" Context="editform_context">
-                        <DataAnnotationsValidator />
-                        <h2>Use a local account to log in.</h2>
-                        <hr />
-                        <div class="form-floating mb-3">
-                            <InputText @bind-Value="Input.Email"
-                                       id="Input.Email"
-                                       class="form-control"
-                                       autocomplete="username"
-                                       aria-required="true"
-                                       placeholder="name@example.com" />
-                            <label for="Input.Email" class="form-label">
-                                Email
-                            </label>
-                            <ValidationMessage For="() => Input.Email"
-                                               class="text-danger" />
-                        </div>
-                        <div class="form-floating mb-3">
-                            <InputText type="password"
-                                       @bind-Value="Input.Password"
-                                       id="Input.Password"
-                                       class="form-control"
-                                       autocomplete="current-password"
-                                       aria-required="true"
-                                       placeholder="password" />
-                            <label for="Input.Password" class="form-label">
-                                Password
-                            </label>
-                            <ValidationMessage For="() => Input.Password"
-                                               class="text-danger" />
-                        </div>
-                        <div>
-                            <button type="submit" class="w-100 btn btn-lg btn-primary">
-                                Log in
-                            </button>
-                        </div>
-                        <div class="mt-3">
-                            <p>
-                                <a href="register">Register as a new user</a>
-                            </p>
-                        </div>
-                         <div class="mt-3">
-                            <p>
-                                <a href="forgot-password">Forgot password?</a>
-                            </p>
-                        </div>
-                    </EditForm>
-                </section>
-            </div>
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
+    <AuthorizeView>
+        <Authorized>
+            <MudAlert Severity="Severity.Success" Elevation="0">You're logged in as @context.User.Identity?.Name.
+            </MudAlert>
+        </Authorized>
+        <NotAuthorized>
+            @foreach (var error in formResult.ErrorList)
+            {
+                <MudAlert Severity="Severity.Error" Elevation="0">@error</MudAlert>
+            }
+            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login" Context="editform_context">
+                <DataAnnotationsValidator />
+                <MudPaper Class="pa-6" Elevation="1">
+                    <MudCardContent>
+                        <MudTextField Label="Email" Class="mt-3" @bind-Value="Input.Email" For="@(() => Input.Email)"
+                            Variant="Variant.Outlined" />
+                        <MudTextField Label="Password" Class="mt-3" @bind-Value="Input.Password"
+                            For="@(() => Input.Password)" InputType="InputType.Password" Variant="Variant.Outlined" />
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                            Class="ml-auto">Log in</MudButton>
+                    </MudCardActions>
+
+                    <MudText>
+                        <MudLink Href="register">Register as a new user</MudLink>
+                    </MudText>
+                    <MudText>
+                        <MudLink Href="forgot-password">Forgot password?</MudLink>
+                    </MudText>
+                </MudPaper>
+            </EditForm>
+        </NotAuthorized>
+    </AuthorizeView>
 </MudContainer>
 
 
