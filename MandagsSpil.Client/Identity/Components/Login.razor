@@ -58,10 +58,20 @@
     {
         formResult = await Acct.LoginAsync(Input.Email, Input.Password);
 
-        if (formResult.Succeeded && !string.IsNullOrEmpty(ReturnUrl))
+        if (formResult.Succeeded)
         {
-            Navigation.NavigateTo(ReturnUrl);
+            if (!string.IsNullOrEmpty(ReturnUrl))
+            {
+                Navigation.NavigateTo(ReturnUrl);
+
+                return;
+            }
+
+            Navigation.NavigateTo("/");
+
         }
+
+
     }
 
     private sealed class InputModel
