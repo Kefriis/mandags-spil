@@ -285,7 +285,7 @@ public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFact
     {
         string[] defaultDetail = ["An unknown error prevented password reset."];
 
-        var defaultReturn = new IdentityFormResult { Succeeded = false, Errors = [new IdentityError() {Code = "Unknown", Description = "An unknown error prevented password reset."}] };
+        var defaultReturn = new IdentityFormResult { Succeeded = false, Errors = [new IdentityError() { Code = "Unknown", Description = "An unknown error prevented password reset." }] };
 
         try
         {
@@ -321,5 +321,19 @@ public class CookieAuthenticationStateProvider(IHttpClientFactory httpClientFact
         }
 
         return defaultReturn;
+    }
+
+    public async Task<UserInfoCustom?> GetUserInfo()
+    {
+        using var userResponse = await httpClient.GetAsync("identity/me");
+
+        // throw if user info wasn't retrieved
+        userResponse.EnsureSuccessStatusCode();
+
+        // user is authenticated,so let's build their authenticated identity
+        var userJson = await userResponse.Content.ReadAsStringAsync();
+        var userInfo = JsonSerializer.Deserialize<UserInfoCustom>(userJson, jsonSerializerOptions);
+
+        return userInfo;
     }
 }

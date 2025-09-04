@@ -22,3 +22,9 @@ public class UserInfo
     /// </summary>
     public Dictionary<string, string> Claims { get; set; } = [];
 }
+
+public class UserInfoCustom
+{
+    public Guid Id { get; set; }
+    public string? Name { get; set; }
+}

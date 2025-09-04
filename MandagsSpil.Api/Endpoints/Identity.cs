@@ -1,6 +1,7 @@
 using System;
 using System.Security.Claims;
 using System.Text;
+using MandagsSpil.Api.Extensions;
 using MandagsSpil.Api.Interfaces;
 using MandagsSpil.Api.Models;
 using MandagsSpil.Shared.Contracts.Identity;
@@ -47,6 +48,21 @@ internal static class IdentityEndpoints
             }
 
             return Results.Unauthorized();
+        }).RequireAuthorization();
+
+        app.MapGet("/identity/me", (ClaimsPrincipal user) =>
+        {
+            // The user ID is in the NameIdentifier claim.
+            var userId = user.GetUserId();
+
+            if (userId is null)
+            {
+                // This should not happen on an endpoint with .RequireAuthorization(), but it's good practice to check.
+                return Results.Unauthorized();
+            }
+
+            // You can also get other claims like the username.
+            return Results.Ok(new { id = userId, name = user.Identity?.Name });
         }).RequireAuthorization();
 
         app.MapPost("/identity/forgotPassword", async (UserManager<AppUser> userManager, IEmailSender emailSender, [FromBody] ForgotPasswordModel model) =>
