@@ -50,7 +50,10 @@ internal static class IdentityEndpoints
             return Results.Unauthorized();
         }).RequireAuthorization();
 
-        app.MapGet("/identity/me", (ClaimsPrincipal user) =>
+        var group = app.MapGroup("/identity")
+            .WithTags("Identity");
+
+        group.MapGet("/me", (ClaimsPrincipal user) =>
         {
             // The user ID is in the NameIdentifier claim.
             var userId = user.GetUserId();
@@ -65,7 +68,7 @@ internal static class IdentityEndpoints
             return Results.Ok(new { id = userId, name = user.Identity?.Name });
         }).RequireAuthorization();
 
-        app.MapPost("/identity/forgotPassword", async (UserManager<AppUser> userManager, IEmailSender emailSender, [FromBody] ForgotPasswordModel model) =>
+        group.MapPost("/forgotPassword", async (UserManager<AppUser> userManager, IEmailSender emailSender, [FromBody] ForgotPasswordModel model) =>
         {
             try
             {
@@ -95,7 +98,7 @@ internal static class IdentityEndpoints
 
         });
 
-        app.MapPost("/identity/resetPassword", async (UserManager<AppUser> userManager, [FromBody] ResetPasswordModel model) =>
+        group.MapPost("/resetPassword", async (UserManager<AppUser> userManager, [FromBody] ResetPasswordModel model) =>
         {
             var user = await userManager.FindByEmailAsync(model.Email);
             if (user is null)

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using MandagsSpil.Api.Endpoints;
 using MandagsSpil.Api.Interfaces;
+using MandagsSpil.Api.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,9 @@ builder.Services.AddDbContext<AppDbContext>(
         options.UseNpgsql(builder.Configuration.GetValue<string>("DefaultConnection"));
         //options.UseInMemoryDatabase("AppDb");
     });
+
+builder.Services.AddDbContext<PersistenceContext>(options =>
+  options.UseNpgsql(builder.Configuration.GetValue<string>("DefaultConnection")));
 
 builder.Services.AddIdentityCore<AppUser>()
     .AddRoles<IdentityRole>()
@@ -85,6 +89,7 @@ app.UseSwaggerUI();
 app.MapIdentityApi<AppUser>();
 
 app.MapCustomIdentityEndpoints();
+app.MapUserEndpoints();
 
 app.UseHttpsRedirection();
 

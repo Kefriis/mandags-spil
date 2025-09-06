@@ -2,6 +2,7 @@
 @using System.ComponentModel.DataAnnotations
 @inject IAccountManagement Acct
 @inject NavigationManager Navigation
+@inject IUserService UserService
 
 <PageTitle>Login</PageTitle>
 <HeaderTitle Title="Login" />
@@ -60,6 +61,13 @@
 
         if (formResult.Succeeded)
         {
+            var userInfo = await UserService.GetUserAsync();
+
+            if(userInfo is null){
+                Navigation.NavigateTo("/profile?Create=true");
+                return;
+            }
+
             if (!string.IsNullOrEmpty(ReturnUrl))
             {
                 Navigation.NavigateTo(ReturnUrl);

@@ -1,0 +1,118 @@
+﻿@page "/profile"
+@using MandagsSpil.Shared.Contracts.Identity
+@inject IUserService UserService
+@inject ISnackbar Snackbar
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<HeaderTitle Title="Profile" />
+<PageTitle>Profile</PageTitle>
+
+<OverlayWithText Visible="_loading" Text="Updating..." />
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pt-4">
+<MudPaper Class="pa-6" Elevation="1">
+   <MudGrid>
+        <MudItem xs="6">
+            <MudText Typo="Typo.h6">User:</MudText>
+        </MudItem>
+        <MudItem xs="6">
+            <MudText Typo="Typo.h6">@UserPrincipal?.Identity?.Name</MudText>
+        </MudItem>
+    </MudGrid>
+    @{
+        if (Create)
+        {
+            <MudText Typo="Typo.h4">Update your profile</MudText>
+        }
+        else
+        {
+            <MudText Typo="Typo.h4">Profile</MudText>
+        }
+    }
+
+    <EditForm Model="Input" FormName="update-profile" OnValidSubmit="OnValidSubmitAsync" method="post">
+        <DataAnnotationsValidator />
+        
+            <MudCardContent>
+                <MudTextField Label="Call Of Duty 2 Username" Variant="Variant.Outlined"
+                    @bind-Value="Input.Cod2Username" For="@(() => Input.Cod2Username)" InputType="InputType.Text" />
+            </MudCardContent>
+
+            <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                    Class="ml-auto">
+                    Save</MudButton>
+            </MudCardActions>
+        
+    </EditForm>
+
+      <MudButton StartIcon="@Icons.Material.Filled.Logout" OnClick="NavigateLogout" Size="Size.Large"
+                FullWidth="true" Variant="Variant.Outlined">Logout</MudButton>
+</MudPaper>
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery]
+    private bool Create { get; set; }
+
+    [SupplyParameterFromForm(FormName = "update-profile")]
+    private UserDto Input { get; set; } = new UserDto();
+
+    private bool _loading = false;
+    private ClaimsPrincipal? UserPrincipal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        UserPrincipal = authState.User;
+
+        if (!Create)
+        {
+            var userInfo = await UserService.GetUserAsync();
+            if (userInfo is not null)
+            {
+                Input = userInfo;
+            }
+            else
+            {
+                Snackbar.Add("Error loading profile", Severity.Error);
+            }
+        }
+    }
+    private async Task NavigateLogout()
+    {
+        await UserService.RemoveUser();
+        NavigationManager.NavigateTo("/logout?ReturnUrl=/");
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        _loading = true;
+        if (!Create)
+        {
+            var userInfo = await UserService.UpdateUser(Input);
+            if (userInfo)
+            {
+                Snackbar.Add("Profile updated", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Error updating profile", Severity.Error);
+            }
+        }
+        else
+        {
+            var createResult = await UserService.CreateUser(Input);
+            if (!createResult.Success)
+            {
+                Snackbar.Add(createResult.Message ?? "Error creating profile", Severity.Error);
+                _loading = false;
+                return;
+            }
+        }
+
+        _loading = false;
+    }
+}

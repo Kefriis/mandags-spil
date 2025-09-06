@@ -22,4 +22,4 @@ This repository contains the source code for the Mandags Spil project.
 - ❌ Users will be able to define their player tags for different games to automate score assignment from games where they have assigned a user tag. 
 
 ## API
-- to run migrations make sure that Ef Core tools are installed and run  dotnet ef database update --connection < connection string >
+- to run migrations make sure that Ef Core tools are installed and run  dotnet ef database update --connection < connection string > --context PersistenceContext
