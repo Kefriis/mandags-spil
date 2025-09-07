@@ -1,10 +1,11 @@
 using MandagsSpil.Api.Services;
 using MandagsSpil.Shared.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using System.Threading.Tasks;
 
 namespace MandagsSpil.Api.Hubs;
 
+[Authorize]
 public class LobbyHub : Hub
 {
     private readonly LobbyStateService _lobbyState;

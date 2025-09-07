@@ -1,25 +1,28 @@
 using System;
+using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 
 namespace MandagsSpil.Client.Services;
 
 public class StorageService
 {
-    private readonly IJSRuntime _jsRuntime;
+    private readonly ILocalStorageService _localStorageService;
+    private readonly string _userNameKey = "username";
+    private readonly string _developerKey = "developer";
 
-    public StorageService(IJSRuntime jsRuntime)
+    public StorageService(ILocalStorageService localStorageService)
     {
-        _jsRuntime = jsRuntime;
+        _localStorageService = localStorageService;
     }
 
     public async Task SetUserNameAsync(string userName)
     {
-        await SetItemAsync("username", userName);
+        await _localStorageService.SetItemAsync(_userNameKey, userName);
     }
 
     public async Task<string?> GetUserNameAsync()
     {
-        var result = await GetItemAsync("username");
+        var result = await _localStorageService.GetItemAsync<string>(_userNameKey);
         if(string.IsNullOrWhiteSpace(result))
             return "Unknown Soldier";
 
@@ -28,30 +31,20 @@ public class StorageService
 
     public async Task RemoveUserNameAsync()
     {
-        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "username");
+        await _localStorageService.RemoveItemAsync(_userNameKey);
     }
 
     public async Task SetDeveloperModeAsync(bool isDeveloper)
     {
-        await SetItemAsync("developer", isDeveloper.ToString());
+        await _localStorageService.SetItemAsync(_developerKey, isDeveloper);
     }
 
     public async Task<bool> GetDeveloperModeAsync()
     {
-        var result = await GetItemAsync("developer");
+        var result = await _localStorageService.GetItemAsync<string>(_developerKey);
         if (string.IsNullOrWhiteSpace(result))
             return false;
 
         return bool.TryParse(result, out var isDev) && isDev;
-    }
-
-    public async Task SetItemAsync(string key, string value)
-    {
-        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", key, value);
-    }
-
-    public async Task<string?> GetItemAsync(string key)
-    {
-        return await _jsRuntime.InvokeAsync<string>("localStorage.getItem", key);
     }
 }

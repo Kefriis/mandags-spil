@@ -23,8 +23,8 @@ builder.Services.AddMudServices(options =>
 builder.Services.AddPWAUpdater();
 builder.Services.AddBlazoredLocalStorage();
 
-builder.Services.AddSingleton<Cod2State>();
-builder.Services.AddSingleton<StorageService>();
+builder.Services.AddScoped<Cod2State>();
+builder.Services.AddScoped<StorageService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.AddIdentityServices();

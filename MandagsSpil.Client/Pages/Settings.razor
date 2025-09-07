@@ -7,16 +7,9 @@
 <PageTitle>Settings</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
-    <MudStack Row="true">
-        <MudTextField @bind-Value="Username" Label="Cod2 Player Name" Variant="Variant.Outlined" />
-        <MudButton OnClick="Save" Color="Color.Primary" Variant="Variant.Filled" Class="ml-2">Save
-        </MudButton>
-    </MudStack>
-
-
     <MudSwitch @bind-Value="IsDeveloperMode" Color="Color.Secondary" Class="mt-4" T="bool"
         @bind-Value:after="SaveDeveloperMode">
-        Developer Mode
+        Preview Mode
     </MudSwitch>
 
 </MudContainer>

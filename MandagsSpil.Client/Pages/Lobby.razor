@@ -1,6 +1,9 @@
 ﻿@page "/lobby/{Nation}"
+@using MandagsSpil.Client.Identity
 @using MandagsSpil.Client.Services
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using Microsoft.AspNetCore.SignalR.Client
+@using System.Net
 
 @inject NavigationManager Navigation
 @inject Cod2State Cod2State
@@ -12,7 +15,7 @@
 <PageTitle>Lobby</PageTitle>
 <ShowBackButton />
 
-<OverlayWithText Text="Connecting..." Visible="_loading"/>
+<OverlayWithText Text="Connecting..." Visible="_loading" />
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
     <MudGrid>
@@ -26,7 +29,8 @@
                         <MudListItem Selected="@IsCurrentUser(p.Id)">
                             <div class="d-flex justify-space-between">
                                 <div>@p.UserName</div>
-                                <div>@(p.SelectedClass == ClassNameEnum.Unknown  ? "(No class selected)" : p.SelectedClass.ToString())</div>
+                                <div>@(p.SelectedClass == ClassNameEnum.Unknown ? "(No class selected)" :
+                                                                    p.SelectedClass.ToString())</div>
                             </div>
                         </MudListItem>
                     }
@@ -90,8 +94,15 @@
 
         var backendUrl = Configuration["backendUrl"];
 
+        // The HttpMessageHandlerFactory is already set correctly.
         hubConnection = new HubConnectionBuilder()
-        .WithUrl($"{backendUrl}/lobbyhub")
+        .WithUrl($"{backendUrl}/lobbyhub", o =>
+        {
+            o.HttpMessageHandlerFactory = message =>
+    {
+            return new CredentialsDelegatingHandler();
+        };
+        })
         .WithAutomaticReconnect()
         .Build();
 
@@ -100,22 +111,31 @@
         try
         {
             await hubConnection.StartAsync();
+
+            // Only attempt to invoke hub methods if the connection is active.
+            if (hubConnection.State == HubConnectionState.Connected)
+            {
+                await hubConnection.InvokeAsync("JoinLobby", UserName, Nation, Cod2State.Id);
+
+                // Initial fetch of lobby state
+                LobbyStateDto? lobby = await hubConnection.InvokeAsync<LobbyStateDto>("GetLobbyState", Nation);
+                OnLobbyUpdated(lobby);
+            }
         }
         catch (Exception ex)
-        {   
+        {
             Snackbar.Add("Could not connect to server. Please try again later.", Severity.Error);
-            Navigation.NavigateTo("/nation-select/" + GameModeConstants.Lobby);
-
+        }
+        finally
+        {
             _loading = false;
-            return;
         }
 
-        await hubConnection.InvokeAsync("JoinLobby", UserName, Nation, Cod2State.Id);
-
-        // Initial fetch of lobby state
-        LobbyStateDto? lobby = await hubConnection.InvokeAsync<LobbyStateDto>("GetLobbyState", Nation);
-        OnLobbyUpdated(lobby);
-        _loading = false;
+        // Only navigate away if the connection failed to start.
+        if (hubConnection.State != HubConnectionState.Connected)
+        {
+            Navigation.NavigateTo("/nation-select/" + GameModeConstants.Lobby);
+        }
     }
 
     private void OnLobbyUpdated(LobbyStateDto lobby)
@@ -153,14 +173,16 @@
 
     private async Task OnClassSelected(ClassNameEnum newClass)
     {
-        if (hubConnection is not null){
-            var result = await hubConnection.InvokeAsync<ResponseType>("SelectClass", UserName, Nation, newClass.ToString(), Cod2State.Id);
-            
+        if (hubConnection is not null)
+        {
+            var result = await hubConnection.InvokeAsync<ResponseType>("SelectClass", UserName, Nation, newClass.ToString(),
+            Cod2State.Id);
+
             if (!result.Success)
             {
                 Snackbar.Add(result.Message ?? "Could not select class", Severity.Error);
                 return;
-            }   
+            }
         }
         SelectedClass = newClass;
     }
