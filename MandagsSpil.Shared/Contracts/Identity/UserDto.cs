@@ -6,4 +6,5 @@ public class UserDto
 {
     public long UserId { get; set; }
     public string? Cod2Username { get; set; }
+    public Guid? IdentityId { get; set; }
 }

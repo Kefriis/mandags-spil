@@ -14,7 +14,8 @@ public static class UserEndpoints
 {
     internal static void MapUserEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/user").WithTags("User");
+        var group = app.MapGroup("/user")
+            .WithTags("User");
 
         group.MapGet("/info", async (ClaimsPrincipal user, [FromServices] PersistenceContext context) =>
         {
@@ -30,6 +31,7 @@ public static class UserEndpoints
                     return Results.NotFound();
 
                 var mappedUser = userInfo.ToDto();
+                mappedUser.IdentityId = userInfo.IdentityId;
 
                 return Results.Ok(userInfo);
             }

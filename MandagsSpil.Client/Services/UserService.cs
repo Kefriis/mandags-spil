@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
 using Blazored.LocalStorage;
-using MandagsSpil.Client.Identity.Models;
 using MandagsSpil.Shared.Contracts.Identity;
 
 namespace MandagsSpil.Client.Services;
@@ -8,14 +7,11 @@ namespace MandagsSpil.Client.Services;
 public class UserService : IUserService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILocalStorageService _localStorageService;
-    private readonly string _userInfoKey = "user_info";
     private readonly StorageService _storageService;
 
-    public UserService(IHttpClientFactory httpClientFactory, ILocalStorageService localStorageService, StorageService storageService)
+    public UserService(IHttpClientFactory httpClientFactory, StorageService storageService)
     {
         _httpClientFactory = httpClientFactory;
-        _localStorageService = localStorageService;
         _storageService = storageService;
     }
 
@@ -37,7 +33,7 @@ public class UserService : IUserService
             if (newUser is null)
                 return (false, "Error creating user");
 
-            await _localStorageService.SetItemAsync(_userInfoKey, newUser);
+            await _storageService.SetUserInfoAsync(newUser);
             await _storageService.SetUserNameAsync(newUser.Cod2Username ?? "Unknown Soldier");
 
             return (true, null);
@@ -48,7 +44,7 @@ public class UserService : IUserService
 
     public async Task<UserDto?> GetUserAsync()
     {
-        var userInfo = await _localStorageService.GetItemAsync<UserDto>(_userInfoKey);
+        var userInfo = await _storageService.GetUserInfoAsync();
 
         if (userInfo is not null)
             return userInfo;
@@ -67,7 +63,7 @@ public class UserService : IUserService
             if (remoteUserInfo is null)
                 return null;
 
-            await _localStorageService.SetItemAsync(_userInfoKey, remoteUserInfo);
+            await _storageService.SetUserInfoAsync(remoteUserInfo);
             await _storageService.SetUserNameAsync(remoteUserInfo.Cod2Username ?? "Unknown Soldier");
 
             return remoteUserInfo;
@@ -78,7 +74,7 @@ public class UserService : IUserService
 
     public async Task<bool> RemoveUser()
     {
-        await _localStorageService.RemoveItemAsync(_userInfoKey);
+        await _storageService.RemoveUserInfoAsync();
         await _storageService.RemoveUserNameAsync();
 
         return true;
@@ -100,7 +96,7 @@ public class UserService : IUserService
             if (updatedUser is null)
                 return false;
 
-            await _localStorageService.SetItemAsync(_userInfoKey, updatedUser);
+            await _storageService.SetUserInfoAsync(updatedUser);
             await _storageService.SetUserNameAsync(updatedUser.Cod2Username ?? "Unknown Soldier");
 
             return true;

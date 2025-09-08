@@ -4,7 +4,6 @@ namespace MandagsSpil.Client.Services;
 
 public class Cod2State
 {
-    public Guid Id { get; } = Guid.NewGuid();
     public string UserName { get; set; } = "Unknown Soldier"; // Default to "Unknown User"
     public string GameMode { get; set; } = "Lobby"; // Default to Lobby mode
     public bool isDeveloperMode { get; set; } = false;

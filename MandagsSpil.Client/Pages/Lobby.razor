@@ -76,6 +76,7 @@
 @code {
     [Parameter] public string? UserName { get; set; }
     [Parameter] public string? Nation { get; set; }
+    private Guid UserId {get; set;}
 
     private bool _loading = false;
 
@@ -91,6 +92,15 @@
     {
         _loading = true;
         UserName = await StorageService.GetUserNameAsync();
+        var userId = await StorageService.GetUserIdAsync();
+        if (userId is null)
+        {
+            Snackbar.Add("User not found, please login again.", Severity.Error);
+            Navigation.NavigateTo("/nation-select/" + GameModeConstants.Lobby);
+            return;
+        }
+
+        UserId = userId.Value;
 
         var backendUrl = Configuration["backendUrl"];
 
@@ -115,7 +125,7 @@
             // Only attempt to invoke hub methods if the connection is active.
             if (hubConnection.State == HubConnectionState.Connected)
             {
-                await hubConnection.InvokeAsync("JoinLobby", UserName, Nation, Cod2State.Id);
+                await hubConnection.InvokeAsync("JoinLobby", UserName, Nation, UserId);
 
                 // Initial fetch of lobby state
                 LobbyStateDto? lobby = await hubConnection.InvokeAsync<LobbyStateDto>("GetLobbyState", Nation);
@@ -145,7 +155,7 @@
             Players = lobby.Players.ToList();
             Classes = lobby.Classes.ToList();
 
-            var me = Players.FirstOrDefault(p => p.Id == Cod2State.Id);
+            var me = Players.FirstOrDefault(p => p.Id == UserId);
             if (me == null)
             {
                 // User got kicked or lobby reset, navigate back to nation select
@@ -176,7 +186,7 @@
         if (hubConnection is not null)
         {
             var result = await hubConnection.InvokeAsync<ResponseType>("SelectClass", UserName, Nation, newClass.ToString(),
-            Cod2State.Id);
+            UserId);
 
             if (!result.Success)
             {
@@ -187,13 +197,13 @@
         SelectedClass = newClass;
     }
 
-    private bool IsCurrentUser(Guid id) => id == Cod2State.Id;
+    private bool IsCurrentUser(Guid id) => id == UserId;
 
     public async ValueTask DisposeAsync()
     {
         if (hubConnection is not null)
         {
-            await hubConnection.InvokeAsync("LeaveLobby", UserName, Nation, Cod2State.Id);
+            await hubConnection.InvokeAsync("LeaveLobby", UserName, Nation, UserId);
             await hubConnection.DisposeAsync();
         }
 
@@ -204,7 +214,7 @@
     {
         if (hubConnection is not null)
         {
-            await hubConnection.InvokeAsync("LeaveLobby", UserName, Nation, Cod2State.Id);
+            await hubConnection.InvokeAsync("LeaveLobby", UserName, Nation, UserId);
         }
     }
 }
