@@ -3,7 +3,7 @@ using MandagsSpil.Shared.Contracts;
 
 namespace MandagsSpil.Shared.Contracts;
 
-public record ClassInfo(ClassNameEnum Name, List<string> Weapons, int MaxPlayers = 1);
+public record ClassInfo(ClassNameEnum Name, List<string> Weapons, int MaxPlayers = 1, int CurrentPlayers = 0);
 
 public record PlayerInfo(string UserName, NationEnum Nation, ClassNameEnum SelectedClass, Guid Id, string? ConnectionId = null);
 

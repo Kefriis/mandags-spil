@@ -18,7 +18,7 @@ public class LobbyStateService
         },
         [NationEnum.UK] = new()
         {
-            new ClassInfo(ClassNameEnum.Rifleman, new List<string> { "Lee-Enfield"}, 8),
+            new ClassInfo(ClassNameEnum.Rifleman, new List<string> { "Lee-Enfield", "M1 Garand"}, 8),
             new ClassInfo(ClassNameEnum.Support, new List<string> { "Bren" }, 2),
             new ClassInfo(ClassNameEnum.Sniper, new List<string> { "Scoped Lee-Enfield" }, 1),
             new ClassInfo(ClassNameEnum.Engineer, new List<string> { "Sten", "Shot gun" }, 2)
@@ -122,7 +122,7 @@ public class LobbyStateService
                 }
             }
         }
-        
+
         return (false, $"Could not select class {className} for player {userName}.");
     }
 
@@ -130,6 +130,13 @@ public class LobbyStateService
     {
         var players = GetPlayers(nation);
         var classes = _classesByNation.TryGetValue(nation, out var result) ? result : new List<ClassInfo>();
-        return new LobbyStateDto(nation, players, classes);
+
+        var updatedClasses = classes
+            .Select(classInfo =>
+                classInfo with { CurrentPlayers = players.Count(p => p.SelectedClass == classInfo.Name) }
+            )
+            .ToList();
+
+        return new LobbyStateDto(nation, players, updatedClasses);
     }
 }
