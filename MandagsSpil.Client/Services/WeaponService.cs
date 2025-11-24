@@ -46,12 +46,12 @@ public static class WeaponService
 
     static List<Weapon> russianWeapons = new List<Weapon>
 {
-    new Weapon { Number = 1, Name = "PPSH-41", Nation = "Russian", Weight = 8 },
-    new Weapon { Number = 2, Name = "PPS-42", Nation = "Russian", Weight = 8 },
-    new Weapon { Number = 3, Name = "Mosin-Nagant", Nation = "Russian", Weight = 6 },
-    new Weapon { Number = 4, Name = "SVT-40", Nation = "Russian", Weight = 5 }, // semi-auto, a bit shit
-    new Weapon { Number = 5, Name = "Scoped Mosin-Nagant", Nation = "Russian", Weight = 2 },
-    new Weapon { Number = 6, Name = "Shotgun", Nation = "Russian", Weight = 1 } // shotgun
+    new Weapon { Number = 1, Name = "PPSH-41", Nation = "Russian", Weight = 2 },
+    new Weapon { Number = 2, Name = "PPS-42", Nation = "Russian", Weight = 3 },
+    new Weapon { Number = 3, Name = "Mosin-Nagant", Nation = "Russian", Weight = 8 },
+    new Weapon { Number = 4, Name = "SVT-40", Nation = "Russian", Weight = 10 }, // semi-auto, a bit shit
+    new Weapon { Number = 5, Name = "Scoped Mosin-Nagant", Nation = "Russian", Weight = 4 },
+    new Weapon { Number = 6, Name = "Shotgun", Nation = "Russian", Weight = 3 } // shotgun
 };
     public static List<Weapon> GetWeaponsByNation(NationEnum? nation)
     {
